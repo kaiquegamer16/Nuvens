@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador Firebase - Projeto Ativo: <span id="currentProjectName"></span></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(to right, #007bff, #00a2e8);
+            color: white;
+            padding: 1.2rem 2rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 500;
+        }
+
+        .header button {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .header button:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Project Form */
+        .project-form {
+            margin-bottom: 2rem;
+        }
+
+        .project-form label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+
+        .project-form input[type="text"] {
+            width: 100%;
+            padding: 0.7rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .project-form button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .project-form button:hover {
+            background-color: #218838;
+        }
+
+        /* File List */
+        .file-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .file-list li {
+            background-color: #f0f0f0;
+            padding: 0.7rem;
+            margin-bottom: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .file-list li:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            width: 80%;
+            max-width: 700px;
+        }
+
+        .modal .close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        /* API Configuration Display */
+        .api-config-display {
+            background-color: #f0f0f0;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1.5rem;
+        }
+
+        .api-config-display p {
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .api-config-display p strong {
+            color: #333;
+        }
+
+        /* Database Form */
+        .db-form label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+
+        .db-form input[type="text"],
+        .db-form textarea {
+            width: 100%;
+            padding: 0.7rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .db-form textarea {
+            min-height: 150px;
+        }
+
+        .db-form button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .db-form button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 350px;
+            height: 100%;
+            background-color: white;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.15);
+            padding: 2rem;
+            overflow-y: auto; /* Added scrollbar */
+            z-index: 1001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .settings-panel.show {
+            transform: translateX(0);
+        }
+
+        .settings-panel h2 {
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-panel label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+
+        .settings-panel input[type="text"] {
+            width: 100%;
+            padding: 0.7rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .settings-panel button {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 1rem;
+        }
+
+        .settings-panel button:hover {
+            background-color: #5a6268;
+        }
+
+        .settings-panel .close {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        /* Utilitários */
+        .hidden {
+            display: none;
+        }
+
+        .error {
+            color: red;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Gerenciador Firebase</h1>
+        <button id="openSettings"><i class="fas fa-cog"></i> Configurações</button>
+    </div>
+
+    <div class="settings-panel" id="settingsPanel">
+        <span class="close" id="closeSettings">×</span>
+        <h2>Gerenciamento e Configurações</h2>
+
+        <section>
+            <h3>Configurações do Projeto</h3>
+            <label for="newProjectName">Novo Nome do Projeto:</label>
+            <input type="text" id="newProjectName">
+            <button id="changeProjectName">Alterar Nome do Projeto</button>
+
+            <label for="newApiKey">Nova API Key:</label>
+            <input type="text" id="newApiKey">
+            <button id="changeApiKey">Alterar API Key</button>
+        </section>
+
+        <section>
+            <h3>Configurações do Firebase</h3>
+            <label for="apiKey">API Key:</label>
+            <input type="text" id="apiKey"><br>
+            <label for="authDomain">Auth Domain:</label>
+            <input type="text" id="authDomain"><br>
+            <label for="databaseURL">Database URL:</label>
+            <input type="text" id="databaseURL"><br>
+            <label for="projectId">Project ID:</label>
+            <input type="text" id="projectId"><br>
+            <label for="storageBucket">Storage Bucket:</label>
+            <input type="text" id="storageBucket"><br>
+            <label for="messagingSenderId">Messaging Sender ID:</label>
+            <input type="text" id="messagingSenderId"><br>
+            <label for="appId">App ID:</label>
+            <input type="text" id="appId"><br>
+            <label for="measurementId">Measurement ID:</label>
+            <input type="text" id="measurementId"><br>
+            <button id="saveFirebaseConfig">Salvar Configurações</button>
+            <p id="firebaseConfigError" class="error"></p>
+        </section>
+
+        <section>
+            <h3>Gerenciamento de Dados</h3>
+            <button id="clearFirebaseData">Limpar Todos os Dados</button>
+        </section>
+    </div>
+
+    <div class="container">
+        <section id="newProjectSection" class="project-form">
+            <h2>Criar Novo Projeto</h2>
+            <label for="projectName">Nome do Projeto:</label>
+            <input type="text" id="projectName">
+            <button id="createProject">Criar Projeto</button>
+        </section>
+
+        <section id="apiConfigSection" class="api-config-display hidden">
+            <h2>Configurações da API</h2>
+            <p><strong>Nome do Projeto:</strong> <span id="displayProjectName"></span></p>
+            <p><strong>API Key:</strong> <span id="displayApiKey"></span></p>
+            <p><strong>Database URL:</strong> <span id="displayDatabaseUrl"></span></p>
+            <p><strong>Project ID:</strong> <span id="displayProjectId"></span></p>
+        </section>
+
+        <section id="dbFormSection" class="db-form hidden">
+            <h2>Enviar Arquivo de Texto</h2>
+            <label for="fileName">Nome do Arquivo:</label>
+            <input type="text" id="fileName">
+            <label for="fileContent">Conteúdo do Arquivo:</label>
+            <textarea id="fileContent"></textarea>
+            <button id="sendFile">Enviar Arquivo</button>
+        </section>
+
+        <section id="fileListSection" class="file-list hidden">
+            <h2>Arquivos Salvos</h2>
+            <ul id="fileList"></ul>
+        </section>
+    </div>
+
+    <!-- Modal para exibir o conteúdo do arquivo -->
+    <div id="fileModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModal">×</span>
+            <h2>Conteúdo do Arquivo</h2>
+            <pre id="modalFileContent"></pre>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js";
+        import { getDatabase, ref, set, onValue, remove, get } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-database.js";
+
+        const defaultFirebaseConfig = {
+            apiKey: "AIzaSyBuj2PUWB6YHaE5DPrWnE34NGUGnZDYvDE",
+            authDomain: "banco-5a678.firebaseapp.com",
+            databaseURL: "https://banco-5a678-default-rtdb.firebaseio.com",
+            projectId: "banco-5a678",
+            storageBucket: "banco-5a678.firebasestorage.app",
+            messagingSenderId: "943801310064",
+            appId: "1:943801310064:web:50534c4cdaa459a7b74db5",
+            measurementId: "G-DEER2QFNXL"
+        };
+
+        let firebaseConfig = {
+            apiKey: localStorage.getItem('apiKey') || defaultFirebaseConfig.apiKey,
+            authDomain: localStorage.getItem('authDomain') || defaultFirebaseConfig.authDomain,
+            databaseURL: localStorage.getItem('databaseURL') || defaultFirebaseConfig.databaseURL,
+            projectId: localStorage.getItem('projectId') || defaultFirebaseConfig.projectId,
+            storageBucket: localStorage.getItem('storageBucket') || defaultFirebaseConfig.storageBucket,
+            messagingSenderId: localStorage.getItem('messagingSenderId') || defaultFirebaseConfig.messagingSenderId,
+            appId: localStorage.getItem('appId') || defaultFirebaseConfig.appId,
+            measurementId: localStorage.getItem('measurementId') || defaultFirebaseConfig.measurementId
+        };
+
+        let app;
+        let analytics;
+        let database;
+
+        function initializeFirebase() {
+            try {
+                app = initializeApp(firebaseConfig);
+                analytics = getAnalytics(app);
+                database = getDatabase(app);
+                console.log('Firebase inicializado!');
+                return true;
+            } catch (error) {
+                console.error('Erro ao inicializar o Firebase:', error);
+                return false;
+            }
+        }
+
+        // Elementos da interface
+        const openSettingsButton = document.getElementById('openSettings');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const closeSettingsButton = document.getElementById('closeSettings');
+        const newProjectSection = document.getElementById('newProjectSection');
+        const apiConfigSection = document.getElementById('apiConfigSection');
+        const dbFormSection = document.getElementById('dbFormSection');
+        const fileListSection = document.getElementById('fileListSection');
+        const projectNameInput = document.getElementById('projectName');
+        const createProjectButton = document.getElementById('createProject');
+        const displayProjectName = document.getElementById('displayProjectName');
+        const displayApiKey = document.getElementById('displayApiKey');
+        const displayDatabaseUrl = document.getElementById('displayDatabaseUrl');
+        const displayProjectId = document.getElementById('displayProjectId');
+        const fileContentTextarea = document.getElementById('fileContent');
+        const sendFileButton = document.getElementById('sendFile');
+        const fileListUl = document.getElementById('fileList');
+        const fileModal = document.getElementById('fileModal');
+        const modalFileContent = document.getElementById('modalFileContent');
+        const closeModalButton = document.getElementById('closeModal');
+        const fileNameInput = document.getElementById('fileName');
+
+        const apiKeyInput = document.getElementById('apiKey');
+        const authDomainInput = document.getElementById('authDomain');
+        const databaseURLInput = document.getElementById('databaseURL');
+        const projectIdInput = document.getElementById('projectId');
+        const storageBucketInput = document.getElementById('storageBucket');
+        const messagingSenderIdInput = document.getElementById('messagingSenderId');
+        const appIdInput = document.getElementById('appId');
+        const measurementIdInput = document.getElementById('measurementId');
+        const saveFirebaseConfigButton = document.getElementById('saveFirebaseConfig');
+        const currentProjectNameDisplay = document.getElementById('currentProjectName');
+        const clearFirebaseDataButton = document.getElementById('clearFirebaseData');
+        const firebaseConfigError = document.getElementById('firebaseConfigError');
+
+        const newProjectNameInput = document.getElementById('newProjectName');
+        const newApiKeyInput = document.getElementById('newApiKey');
+        const changeProjectNameButton = document.getElementById('changeProjectName');
+        const changeApiKeyButton = document.getElementById('changeApiKey');
+
+        function generateRandomString(length) {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return result;
+        }
+
+        function generateApiKey() {
+            return `API-${generateRandomString(20)}`;
+        }
+
+        function generateDatabaseUrl(projectId) {
+            return `https://${projectId}-default-rtdb.firebaseio.com`;
+        }
+
+        function showSection(section) {
+            newProjectSection.classList.add('hidden');
+            apiConfigSection.classList.add('hidden');
+            dbFormSection.classList.add('hidden');
+            fileListSection.classList.add('hidden');
+            section.classList.remove('hidden');
+        }
+
+        // Funções para atualizar os dados na interface e no localStorage
+        function updateProjectInfo(projectName, projectId, apiKey, databaseUrl) {
+            localStorage.setItem('projectName', projectName);
+            localStorage.setItem('projectId', projectId);
+            localStorage.setItem('apiKey', apiKey);
+            localStorage.setItem('databaseUrl', databaseUrl);
+
+            displayProjectName.textContent = projectName;
+            displayApiKey.textContent = apiKey;
+            displayDatabaseUrl.textContent = databaseUrl;
+            displayProjectId.textContent = projectId;
+            currentProjectNameDisplay.textContent = projectName;
+
+        }
+
+        // Eventos de clique
+        openSettingsButton.addEventListener('click', () => {
+            settingsPanel.classList.add('show');
+        });
+
+        closeSettingsButton.addEventListener('click', () => {
+            settingsPanel.classList.remove('show');
+        });
+
+        createProjectButton.addEventListener('click', () => {
+            const projectName = projectNameInput.value;
+            if (projectName) {
+                const projectId = projectName.toLowerCase().replace(/\s+/g, '-');
+                const apiKey = generateApiKey();
+                const databaseUrl = generateDatabaseUrl(projectId);
+
+                updateProjectInfo(projectName, projectId, apiKey, databaseUrl)
+                showSection(apiConfigSection);
+            }
+        });
+
+        sendFileButton.addEventListener('click', () => {
+            const content = fileContentTextarea.value;
+            const fileName = fileNameInput.value || `file-${Date.now()}-txt`;
+
+            if (content) {
+                set(ref(database, 'files/' + fileName), content)
+                    .then(() => {
+                        console.log('Arquivo enviado com sucesso!');
+                        fileContentTextarea.value = '';
+                        fileNameInput.value = '';
+                        listFiles();
+                    })
+                    .catch((error) => {
+                        console.error('Erro ao enviar arquivo:', error);
+                    });
+            }
+        });
+
+        // Função para remover o arquivo do Firebase e salvar no localStorage
+        function removeFile(fileName) {
+            get(ref(database, 'files/' + fileName))
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        const fileContent = snapshot.val();
+                        localStorage.setItem(fileName, fileContent); // Salva no localStorage
+                        remove(ref(database, 'files/' + fileName))
+                            .then(() => {
+                                console.log(`Arquivo ${fileName} removido do Firebase e salvo no localStorage.`);
+                                listFiles(); // Atualiza a lista após a remoção
+                            })
+                            .catch(error => {
+                                console.error(`Erro ao remover arquivo ${fileName} do Firebase:`, error);
+                            });
+                    } else {
+                        console.log(`Arquivo ${fileName} não encontrado no Firebase.`);
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro ao verificar a existência do arquivo:", error);
+                });
+        }
+
+        function listFiles() {
+            if (!database) {
+                console.warn('Database não inicializado. Impossível listar os arquivos.');
+                return;
+            }
+
+            onValue(ref(database, 'files'), (snapshot) => {
+                fileListUl.innerHTML = '';
+                const data = snapshot.val();
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = key;
+                        listItem.addEventListener('click', () => {
+                            openFile(key);
+                        });
+                        fileListUl.appendChild(listItem);
+                    });
+                } else {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = 'Nenhum arquivo salvo.';
+                    fileListUl.appendChild(listItem);
+                }
+            });
+        }
+
+        function openFile(fileName) {
+            get(ref(database, 'files/' + fileName))
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        modalFileContent.textContent = snapshot.val();
+                        fileModal.style.display = "block";
+                    } else {
+                        console.log("No data available");
+                        modalFileContent.textContent = "Arquivo não encontrado.";
+                        fileModal.style.display = "block";
+                    }
+                }).catch((error) => {
+                console.error(error);
+                modalFileContent.textContent = "Erro ao carregar o arquivo.";
+                fileModal.style.display = "block";
+            });
+        }
+
+        closeModalButton.addEventListener('click', () => {
+            fileModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target == fileModal) {
+                fileModal.style.display = 'none';
+            }
+        });
+
+        // Evento para salvar as configurações do Firebase
+        saveFirebaseConfigButton.addEventListener('click', () => {
+            localStorage.setItem('apiKey', apiKeyInput.value);
+            localStorage.setItem('authDomain', authDomainInput.value);
+            localStorage.setItem('databaseURL', databaseURLInput.value);
+            localStorage.setItem('projectId', projectIdInput.value);
+            localStorage.setItem('storageBucket', storageBucketInput.value);
+            localStorage.setItem('messagingSenderId', messagingSenderIdInput.value);
+            localStorage.setItem('appId', appIdInput.value);
+            localStorage.setItem('measurementId', measurementIdInput.value);
+
+            firebaseConfig = {
+                apiKey: apiKeyInput.value,
+                authDomain: authDomainInput.value,
+                databaseURL: databaseURLInput.value,
+                projectId: projectIdInput.value,
+                storageBucket: storageBucketInput.value,
+                messagingSenderId: messagingSenderIdInput.value,
+                appId: appIdInput.value,
+                measurementId: measurementIdInput.value
+            };
+
+            if (initializeFirebase()) {
+                showSection(dbFormSection);
+                listFiles();
+                settingsPanel.classList.remove('show');
+                firebaseConfigError.textContent = ""; // Clear any previous error message
+            } else {
+                firebaseConfigError.textContent = 'Erro ao inicializar o Firebase. Verifique suas configurações.';
+            }
+        });
+
+        // Função para limpar os dados do Firebase
+        function clearFirebaseData() {
+            remove(ref(database, 'files'))
+                .then(() => {
+                    console.log('Dados do Firebase limpos com sucesso!');
+                    listFiles(); // Atualiza a lista após a limpeza
+                })
+                .catch((error) => {
+                    console.error('Erro ao limpar os dados do Firebase:', error);
+                });
+        }
+
+        // Evento para limpar os dados do Firebase
+        clearFirebaseDataButton.addEventListener('click', clearFirebaseData);
+
+        //Eventos para trocar API e nome do projeto
+        changeProjectNameButton.addEventListener('click', () => {
+            const newProjectName = newProjectNameInput.value;
+            if (newProjectName) {
+                const projectId = newProjectName.toLowerCase().replace(/\s+/g, '-');
+                const apiKey = localStorage.getItem('apiKey') || generateApiKey();
+                const databaseUrl = generateDatabaseUrl(projectId);
+
+                updateProjectInfo(newProjectName, projectId, apiKey, databaseUrl);
+            }
+        });
+
+        changeApiKeyButton.addEventListener('click', () => {
+            const newApiKey = newApiKeyInput.value;
+             if (newApiKey) {
+                const projectName = localStorage.getItem('projectName')
+                const projectId = localStorage.getItem('projectId')
+                const databaseUrl = generateDatabaseUrl(projectId);
+
+                localStorage.setItem('apiKey', newApiKey)
+
+                updateProjectInfo(projectName, projectId, newApiKey, databaseUrl);
+             }
+        });
+
+        // Inicialização
+        apiKeyInput.value = localStorage.getItem('apiKey') || defaultFirebaseConfig.apiKey;
+        authDomainInput.value = localStorage.getItem('authDomain') || defaultFirebaseConfig.authDomain;
+        databaseURLInput.value = localStorage.getItem('databaseURL') || defaultFirebaseConfig.databaseURL;
+        projectIdInput.value = localStorage.getItem('projectId') || defaultFirebaseConfig.projectId;
+        storageBucketInput.value = localStorage.getItem('storageBucket') || defaultFirebaseConfig.storageBucket;
+        messagingSenderIdInput.value = localStorage.getItem('messagingSenderId') || defaultFirebaseConfig.messagingSenderId;
+        appIdInput.value = localStorage.getItem('appId') || defaultFirebaseConfig.appId;
+        measurementIdInput.value = localStorage.getItem('measurementId') || defaultFirebaseConfig.measurementId;
+
+        if (initializeFirebase()) {
+            if (localStorage.getItem('projectName')) {
+                showSection(dbFormSection);
+                listFiles();
+            } else {
+                showSection(newProjectSection);
+            }
+        } else {
+            alert('Por favor, configure o Firebase no painel de configurações.');
+            openSettingsButton.click();
+        }
+
+        currentProjectNameDisplay.textContent = localStorage.getItem('projectName') || 'Nenhum Projeto';
+    </script>
+</body>
+
+</html>
