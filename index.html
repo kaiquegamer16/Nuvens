@@ -11,13 +11,13 @@
     <style>
         /* Cores do Tema Escuro */
         :root {
-            --bg-color: #1e293b; /* Azul acinzentado escuro */
-            --text-color: #f8fafc; /* Branco acinzentado claro */
-            --primary-color: #6366f1; /* Roxo */
-            --secondary-color: #3b82f6; /* Azul */
-            --accent-color: #10b981; /* Verde */
-            --card-bg-color: #334155; /* Cinza azulado escuro */
-            --border-color: #475569; /* Cinza azulado médio */
+            --bg-color: #1e293b;
+            --text-color: #f8fafc;
+            --primary-color: #6366f1;
+            --secondary-color: #3b82f6;
+            --accent-color: #10b981;
+            --card-bg-color: #334155;
+            --border-color: #475569;
             --shadow-color: rgba(0, 0, 0, 0.5);
         }
 
@@ -29,6 +29,8 @@
             color: var(--text-color);
             min-height: 100vh;
             min-height: calc(var(--vh, 1vh) * 100);
+            display: flex; /* Adicionado */
+            flex-direction: column; /* Adicionado */
         }
 
         /* Header */
@@ -77,6 +79,7 @@
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 0.5rem;
             margin-bottom: 1.5rem;
+            text-align: center; /* Adicionado */
         }
 
         /* Project Form */
@@ -227,7 +230,7 @@
             top: 0;
             right: 0;
             width: 350px;
-            height: 95%;
+            height: 95%;  /* Alterado */
             background-color: var(--card-bg-color);
             box-shadow: -2px 0 5px var(--shadow-color);
             padding: 2rem;
@@ -243,6 +246,7 @@
 
         .settings-panel h2 {
             margin-bottom: 1.5rem;
+            text-align: center; /* Adicionado */
         }
 
         .settings-panel label {
@@ -270,6 +274,9 @@
             cursor: pointer;
             transition: background-color 0.3s;
             margin-top: 1rem;
+            display: block;  /* Centralizar os botões */
+            margin-left: auto; /* Centralizar os botões */
+            margin-right: auto; /* Centralizar os botões */
         }
 
         .settings-panel button:hover {
@@ -313,6 +320,67 @@
             margin-top: 0.5rem;
             font-size: 0.9rem;
         }
+
+        /* Estilos para centralizar formulários e listas */
+        .project-form,
+        .file-list,
+        .db-form {
+            text-align: center; /* Centraliza o conteúdo */
+        }
+
+        .project-form input[type="text"],
+        .db-form input[type="text"],
+        .db-form textarea {
+            max-width: 500px; /* Limita a largura */
+            margin-left: auto; /* Centraliza horizontalmente */
+            margin-right: auto; /* Centraliza horizontalmente */
+            display: block; /* Garante que o margin auto funcione */
+        }
+
+        .file-list ul {
+            display: inline-block; /* Permite centralizar a lista */
+            text-align: left; /* Alinha os itens da lista à esquerda */
+        }
+
+        .file-list li {
+            display: block;
+        }
+
+        .db-form button {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Painel de Navegação Principal */
+        .main-nav {
+            display: flex;
+            justify-content: space-around;
+            background-color: var(--card-bg-color);
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px var(--shadow-color);
+            margin: 1rem auto;
+            max-width: 800px;
+        }
+
+        .main-nav button {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .main-nav button:hover {
+            background-color: #5550bd;
+        }
+
+        #modalFileContent {
+            white-space: pre-wrap;
+        }
     </style>
 </head>
 
@@ -321,6 +389,12 @@
         <h1>Gerenciador Firebase</h1>
         <button id="openSettings"><i class="fas fa-cog"></i> Configurações</button>
     </div>
+
+    <nav class="main-nav">
+        <button id="showCreateProject">Criar Projeto</button>
+        <button id="showProjectList">Listar Projetos</button>
+        <button id="showFiles">Mostrar Arquivos</button>
+    </nav>
 
     <div class="settings-panel" id="settingsPanel">
         <span class="close" id="closeSettings">×</span>
@@ -366,11 +440,16 @@
     </div>
 
     <div class="container">
-        <section id="newProjectSection" class="project-form">
+        <section id="newProjectSection" class="project-form hidden">
             <h2>Criar Novo Projeto</h2>
             <label for="projectName">Nome do Projeto:</label>
             <input type="text" id="projectName">
             <button id="createProject">Criar Projeto</button>
+        </section>
+
+        <section id="projectListSection" class="file-list hidden">
+            <h2>Projetos Salvos</h2>
+            <ul id="projectList"></ul>
         </section>
 
         <section id="apiConfigSection" class="api-config-display hidden">
@@ -489,6 +568,14 @@
         const changeProjectNameButton = document.getElementById('changeProjectName');
         const changeApiKeyButton = document.getElementById('changeApiKey');
 
+        const projectListSection = document.getElementById('projectListSection');
+        const projectListUl = document.getElementById('projectList');
+
+        // Elementos de Navegação Principal
+        const showCreateProjectButton = document.getElementById('showCreateProject');
+        const showProjectListButton = document.getElementById('showProjectList');
+        const showFilesButton = document.getElementById('showFiles');
+
         function generateRandomString(length) {
             const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
             let result = '';
@@ -511,6 +598,7 @@
             apiConfigSection.classList.add('hidden');
             dbFormSection.classList.add('hidden');
             fileListSection.classList.add('hidden');
+            projectListSection.classList.add('hidden');
             section.classList.remove('hidden');
         }
 
@@ -545,8 +633,24 @@
                 const apiKey = generateApiKey();
                 const databaseUrl = generateDatabaseUrl(projectId);
 
-                updateProjectInfo(projectName, projectId, apiKey, databaseUrl)
-                showSection(apiConfigSection);
+                // Salvar projeto no Firebase
+                const projectData = {
+                    name: projectName,
+                    projectId: projectId,
+                    apiKey: apiKey,
+                    databaseUrl: databaseUrl,
+                };
+
+                set(ref(database, 'projects/' + projectId), projectData)
+                    .then(() => {
+                        console.log('Projeto salvo no Firebase!');
+                        updateProjectInfo(projectName, projectId, apiKey, databaseUrl);
+                        listProjects(); // Atualiza a lista de projetos
+                        showSection(projectListSection);
+                    })
+                    .catch((error) => {
+                        console.error('Erro ao salvar o projeto no Firebase:', error);
+                    });
             }
         });
 
@@ -615,6 +719,8 @@
                     listItem.textContent = 'Nenhum arquivo salvo.';
                     fileListUl.appendChild(listItem);
                 }
+                // Após listar os arquivos, mostrar a seção de arquivos
+                showSection(fileListSection);
             });
         }
 
@@ -718,6 +824,52 @@
              }
         });
 
+        // Função para listar os projetos do Firebase
+        function listProjects() {
+            if (!database) {
+                console.warn('Database não inicializado. Impossível listar os projetos.');
+                return;
+            }
+
+            onValue(ref(database, 'projects'), (snapshot) => {
+                projectListUl.innerHTML = ''; // Limpa a lista existente
+                const data = snapshot.val(); // Obtém os dados
+                if (data) {
+                    Object.keys(data).forEach(projectId => { // Itera sobre os projetos
+                        const project = data[projectId];
+                        const listItem = document.createElement('li');
+                        listItem.textContent = project.name; // Exibe o nome do projeto
+                        listItem.addEventListener('click', () => {
+                            // Aqui você pode carregar os dados do projeto no localStorage
+                            // e atualizar a interface.  Use updateProjectInfo().
+                            updateProjectInfo(project.name, project.projectId, project.apiKey, project.databaseUrl);
+                            showSection(dbFormSection);
+                            listFiles();
+                        });
+                        projectListUl.appendChild(listItem);
+                    });
+                } else {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = 'Nenhum projeto salvo.';
+                    projectListUl.appendChild(listItem);
+                }
+            });
+        }
+
+        // Manipuladores de eventos para os botões de navegação
+        showCreateProjectButton.addEventListener('click', () => {
+            showSection(newProjectSection);
+        });
+
+        showProjectListButton.addEventListener('click', () => {
+            listProjects(); // Carrega e exibe a lista de projetos
+            showSection(projectListSection);
+        });
+
+        showFilesButton.addEventListener('click', () => {
+            listFiles(); // Carrega e exibe a lista de arquivos
+        });
+
         // Inicialização
         apiKeyInput.value = localStorage.getItem('apiKey') || defaultFirebaseConfig.apiKey;
         authDomainInput.value = localStorage.getItem('authDomain') || defaultFirebaseConfig.authDomain;
@@ -726,14 +878,16 @@
         storageBucketInput.value = localStorage.getItem('storageBucket') || defaultFirebaseConfig.storageBucket;
         messagingSenderIdInput.value = localStorage.getItem('messagingSenderId') || defaultFirebaseConfig.messagingSenderId;
         appIdInput.value = localStorage.getItem('appId') || defaultFirebaseConfig.appId;
-        measurementIdInput.value = localStorage.getItem('measurementId') || defaultFirebaseConfig.measurementId;
+                measurementIdInput.value = localStorage.getItem('measurementId') || defaultFirebaseConfig.measurementId;
 
         if (initializeFirebase()) {
             if (localStorage.getItem('projectName')) {
-                showSection(dbFormSection);
+                // Se houver um projeto no localStorage, mostra a seção de arquivos
                 listFiles();
             } else {
-                showSection(newProjectSection);
+                // Se não houver projeto, mostra a lista de projetos
+                listProjects();
+                showSection(projectListSection);
             }
         } else {
             alert('Por favor, configure o Firebase no painel de configurações.');
