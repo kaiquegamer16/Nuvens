@@ -212,7 +212,7 @@
             top: 0;
             right: 0;
             width: 350px;
-            height: 100%;
+            height: 95%;
             background-color: white;
             box-shadow: -2px 0 5px rgba(0, 0, 0, 0.15);
             padding: 2rem;
@@ -267,6 +267,24 @@
             font-size: 1.5rem;
             cursor: pointer;
             color: #666;
+        }
+
+        /* Scrollbar Customization */
+        .settings-panel::-webkit-scrollbar {
+            width: 8px; /* Largura da scrollbar */
+        }
+
+        .settings-panel::-webkit-scrollbar-track {
+            background: #f1f1f1; /* Cor do fundo da scrollbar */
+        }
+
+        .settings-panel::-webkit-scrollbar-thumb {
+            background: #888; /* Cor do "polegar" da scrollbar */
+            border-radius: 4px; /* Arredondamento do "polegar" */
+        }
+
+        .settings-panel::-webkit-scrollbar-thumb:hover {
+            background: #555; /* Cor do "polegar" ao passar o mouse */
         }
 
         /* Utilitários */
