@@ -106,32 +106,6 @@
             background-color: #f8f9fa;
             overflow-y: auto;
         }
-
-        /* Estilos para a autenticação */
-        #authPanel {
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            background-color: #f8f9fa;
-        }
-
-        #profileIcon {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background-color: #bbb;
-            display: inline-block;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-
-        #profileIcon img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js" type="text/javascript"
         charset="utf-8"></script>
@@ -141,28 +115,13 @@
     <div class="container">
         <h1>Simulador de Projetos Firebase</h1>
 
-        <!-- Painel de Autenticação -->
-        <div id="authPanel">
+        <!-- Autenticação -->
+        <div class="mb-3">
             <h2>Autenticação</h2>
-            <div class="mb-3">
-                <label for="nickname" class="form-label">Nome de Usuário:</label>
-                <input type="text" class="form-control" id="nickname" placeholder="Nome de Usuário">
-            </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Senha:</label>
-                <input type="password" class="form-control" id="password" placeholder="Senha">
-            </div>
-            <button class="btn btn-primary" id="signUp">Criar Conta</button>
-            <button class="btn btn-secondary" id="signIn">Entrar</button>
-            <p id="authStatus"></p>
-        </div>
-
-        <!-- Botão de Logout e Ícone de Perfil -->
-        <div id="profileArea" style="display: none;">
-            <div id="profileIcon">
-                <img src="" alt="Perfil" style="display: none;">
-            </div>
-            <button class="btn btn-danger" id="signOut">Sair</button>
+            <label for="username" class="form-label">Nome de Usuário:</label>
+            <input type="text" class="form-control" id="username" placeholder="Nome de Usuário">
+            <button class="btn btn-primary mt-2" id="createUser">Criar Conta</button>
+            <p id="loginStatus">Nenhum usuário logado.</p>
         </div>
 
         <!-- Criar Projeto -->
@@ -234,13 +193,15 @@
             get,
             set
         } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-database.js";
-        import {
+        // NÃO PRECISAMOS MAIS DO AUTH, MAS MANTEMOS PARA CASO QUEIRA USAR DEPOIS
+        /*import {
             getAuth,
             createUserWithEmailAndPassword,
             signInWithEmailAndPassword,
             signOut,
             onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
+        */
 
         // Configurações do SEU projeto Firebase (SUBSTITUA!)
         const firebaseConfig = {
@@ -257,13 +218,9 @@
         // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
-        const auth = getAuth(app);
+        //const auth = getAuth(app); // REMOVEMOS O AUTH
 
-        // Inicializar o editor Ace
-        const codeEditor = ace.edit("codeEditor");
-        codeEditor.setTheme("ace/theme/monokai");
-        codeEditor.session.setMode("ace/mode/javascript");
-
+        // Estado da autenticação
         let currentUser = null;
 
         // Funções utilitárias
@@ -277,56 +234,21 @@
             return apiKey;
         }
 
-        function loadProjects(userId) {
-            if (!userId) {
-                return;
-            }
-            const projectsRef = ref(database, `users/${userId}/projects`);
-            onValue(projectsRef, (snapshot) => {
-                const data = snapshot.val();
-                const projects = data ? Object.entries(data).map(([key, value]) => ({
-                    id: key,
-                    ...value
-                })) : [];
-                renderProjects(projects);
-            });
+        function loadProjects() {
+            let projects = JSON.parse(localStorage.getItem('firebaseProjects')) || [];
+            return projects;
         }
 
-        function saveProject(userId, project) {
-            if (!userId) {
-                console.error("Nenhum usuário logado.");
-                return;
-            }
-
-            const projectsRef = ref(database, `users/${userId}/projects`);
-            return push(projectsRef, project);
+        function saveProjects(projects) {
+            localStorage.setItem('firebaseProjects', JSON.stringify(projects));
         }
 
-        function updateProject(userId, projectId, updates) {
-            if (!userId || !projectId) {
-                console.error("Usuário ou ID do projeto inválido.");
-                return;
-            }
-
-            const projectRef = ref(database, `users/${userId}/projects/${projectId}`);
-            return update(projectRef, updates);
-        }
-
-        function deleteProject(userId, projectId) {
-            if (!userId || !projectId) {
-                console.error("Usuário ou ID do projeto inválido.");
-                return;
-            }
-
-            const projectRef = ref(database, `users/${userId}/projects/${projectId}`);
-            return remove(projectRef);
-        }
-
-        function renderProjects(projects) {
+        function renderProjects() {
             const projectListDiv = document.getElementById('projectList');
             projectListDiv.innerHTML = '';
 
-            projects.forEach((project) => {
+            const projects = loadProjects();
+            projects.forEach((project, index) => {
                 const projectDiv = document.createElement('div');
                 projectDiv.classList.add('projectItem');
                 projectDiv.innerHTML = `
@@ -335,7 +257,7 @@
                         <span class="apiKey">API Key: ${project.apiKey}</span>
                     </div>
                     <div class="projectActions">
-                        <button class="btn btn-danger btn-sm deleteProject" data-id="${project.id}">
+                        <button class="btn btn-danger btn-sm deleteProject" data-index="${index}">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
@@ -353,16 +275,19 @@
             document.querySelectorAll('.deleteProject').forEach(button => {
                 button.addEventListener('click', (event) => {
                     event.stopPropagation(); // Impede que o evento de clique se propague para o projectDiv
-                    const projectId = button.dataset.id;
-                    deleteProject(currentUser.uid, projectId)
-                        .then(() => {
-                            showAlert('Projeto excluído com sucesso!', 'success');
-                        })
-                        .catch(error => {
-                            showAlert('Erro ao excluir projeto: ' + error, 'danger');
-                        });
+                    const indexToDelete = parseInt(button.dataset.index);
+                    deleteProject(indexToDelete);
                 });
             });
+        }
+
+        function deleteProject(index) {
+            let projects = loadProjects();
+            projects.splice(index, 1);
+            saveProjects(projects);
+            renderProjects();
+            closeProjectDashboard(); // Esconde o painel se estiver aberto
+            showAlert('Projeto excluído com sucesso!', 'success');
         }
 
         function openProjectDashboard(project) {
@@ -377,11 +302,10 @@
             updateIntegrationCode(project.apiKey);
 
             // Carregar dados do armazenamento
-            loadStorageData(currentUser.uid, project.apiKey);
+            loadStorageData(project.apiKey);
 
             // Armazenar o projeto atualmente aberto
             dashboard.dataset.currentProjectApiKey = project.apiKey;
-            dashboard.dataset.currentProjectId = project.id;
         }
 
         function closeProjectDashboard() {
@@ -422,9 +346,9 @@
             codeEditor.clearSelection();
         }
 
-        function loadStorageData(userId, apiKey) {
+        function loadStorageData(apiKey) {
             const storageDataDiv = document.getElementById('storageData');
-            const dataRef = ref(database, `users/${userId}/project_data/${apiKey}`);
+            const dataRef = ref(database, `simulated_projects/${apiKey}`);
 
             get(dataRef)
                 .then((snapshot) => {
@@ -441,8 +365,8 @@
                 });
         }
 
-        function saveData(userId, apiKey, jsonData) {
-            const dataRef = ref(database, `users/${userId}/project_data/${apiKey}`);
+        function saveData(apiKey, jsonData) {
+            const dataRef = ref(database, `simulated_projects/${apiKey}`);
 
             return set(dataRef, jsonData)
                 .then(() => {
@@ -470,100 +394,116 @@
             }, 5000);
         }
 
-        // Autenticação
-        document.getElementById('signUp').addEventListener('click', () => {
-            const nickname = document.getElementById('nickname').value;
-            const password = document.getElementById('password').value;
-            const email = `${nickname}@example.com`; // Email genérico, não precisa ser real
+        // Event Listeners
+        document.getElementById('createUser').addEventListener('click', async () => {
+            const username = document.getElementById('username').value.trim();
+            if (username) {
+                try {
+                    // Salva o nome de usuário no Firebase
+                    const userRef = ref(database, `users/${username}`); // Caminho para salvar os usuários
+                    await set(userRef, {
+                        username: username
+                    }); // Salva o nome de usuário
 
-            createUserWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    const user = userCredential.user;
-                    return ref(database, `users/${user.uid}/profile`).set({
-                        nickname: nickname
-                    });
-                })
-                .then(() => {
-                    showAlert('Conta criada com sucesso!', 'success');
-                    document.getElementById('authPanel').style.display = 'none'; // Esconde painel de autenticação
-                    document.getElementById('profileArea').style.display = 'block'; // Exibe área de perfil
-                    document.getElementById('authStatus').textContent = `Usuário logado: ${nickname}`;
-                    document.getElementById('projectName').disabled = false;
-                    loadProjects(auth.currentUser.uid);
-                })
-                .catch((error) => {
-                    showAlert('Erro ao criar conta: ' + error.message, 'danger');
-                });
-        });
-
-        document.getElementById('signIn').addEventListener('click', () => {
-            const nickname = document.getElementById('nickname').value;
-            const password = document.getElementById('password').value;
-            const email = `${nickname}@example.com`;
-
-            signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    const user = userCredential.user;
-                    currentUser = user;
-                    updateUI(user);
-                    showAlert('Login realizado com sucesso!', 'success');
-                })
-                .catch((error) => {
-                    showAlert('Erro ao realizar login: ' + error.message, 'danger');
-                });
-        });
-
-        document.getElementById('signOut').addEventListener('click', () => {
-            signOut(auth)
-                .then(() => {
-                    currentUser = null;
-                    updateUI(null);
-                    showAlert('Logout realizado com sucesso!', 'success');
-                })
-                .catch((error) => {
-                    showAlert('Erro ao realizar logout: ' + error.message, 'danger');
-                });
-        });
-
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            updateUI(user);
-        });
-
-        function updateUI(user) {
-            const authStatus = document.getElementById('authStatus');
-            const authPanel = document.getElementById('authPanel');
-            const createProjectButton = document.getElementById('createProject');
-            const profileArea = document.getElementById('profileArea');
-
-            if (user) {
-                ref(database, `users/${user.uid}/profile`).once('value')
-                    .then(snapshot => {
-                        const profile = snapshot.val();
-                        if (profile) {
-                            authStatus.textContent = `Usuário logado: ${profile.nickname}`;
-                            authPanel.style.display = 'none';
-                            profileArea.style.display = 'block';
-                            createProjectButton.disabled = false;
-                            loadProjects(user.uid);
-                        }
-                    });
+                    currentUser = {
+                        uid: username,
+                        username: username
+                    }; // Define o usuário atual
+                    document.getElementById('loginStatus').textContent = `Usuário ${username} criado e logado com sucesso!`;
+                    document.getElementById('username').value = ''; // Limpa o campo
+                    showAlert(`Usuário ${username} criado e logado com sucesso!`, 'success');
+                } catch (error) {
+                    console.error("Erro ao criar usuário:", error);
+                    showAlert(`Erro ao criar usuário: ${error.message}`, 'danger');
+                }
             } else {
-                authStatus.textContent = 'Nenhum usuário logado.';
-                authPanel.style.display = 'block';
-                profileArea.style.display = 'none';
-                createProjectButton.disabled = true;
-                document.getElementById('projectList').innerHTML = '';
+                showAlert('Por favor, insira um nome de usuário.', 'warning');
             }
-        }
+        });
 
-        import {
-            push,
-            update
-        } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-database.js";
+
+        document.getElementById('createProject').addEventListener('click', () => {
+            if (!currentUser) {
+                showAlert('Por favor, crie um usuário primeiro.', 'warning');
+                return;
+            }
+
+            const projectName = document.getElementById('projectName').value.trim();
+            if (projectName) {
+                let projects = loadProjects();
+                const newProject = {
+                    name: projectName,
+                    apiKey: generateRandomApiKey(),
+                    owner: currentUser.uid // Associa o projeto ao usuário logado
+                };
+                projects.push(newProject);
+                saveProjects(projects);
+                renderProjects();
+                document.getElementById('projectName').value = '';
+                showAlert('Projeto criado com sucesso!', 'success');
+            } else {
+                showAlert('Por favor, insira o nome do projeto.', 'danger');
+            }
+        });
+
+        document.getElementById('generateApiKey').addEventListener('click', () => {
+            if (!currentUser) {
+                showAlert('Por favor, crie um usuário primeiro.', 'warning');
+                return;
+            }
+
+            const dashboard = document.getElementById('projectDashboard');
+            const currentProjectApiKey = dashboard.dataset.currentProjectApiKey;
+
+            if (currentProjectApiKey) {
+                let projects = loadProjects();
+                const projectIndex = projects.findIndex(p => p.apiKey === currentProjectApiKey);
+
+                if (projectIndex !== -1) {
+                    projects[projectIndex].apiKey = generateRandomApiKey();
+                    saveProjects(projects);
+                    renderProjects();
+                    openProjectDashboard(projects[projectIndex]);
+                    showAlert('Chave API gerada com sucesso!', 'success');
+                } else {
+                    showAlert('Projeto não encontrado.', 'danger');
+                }
+            } else {
+                showAlert('Nenhum projeto selecionado.', 'warning');
+            }
+        });
+
+        document.getElementById('saveData').addEventListener('click', () => {
+            if (!currentUser) {
+                showAlert('Por favor, crie um usuário primeiro.', 'warning');
+                return;
+            }
+            const dashboard = document.getElementById('projectDashboard');
+            const apiKey = dashboard.dataset.currentProjectApiKey;
+            const apiData = document.getElementById('apiData').value.trim();
+
+            if (apiKey && apiData) {
+                try {
+                    const jsonData = JSON.parse(apiData);
+                    saveData(apiKey, jsonData)
+                        .then(message => {
+                            showAlert(message, 'success');
+                            document.getElementById('apiData').value = '';
+                            loadStorageData(apiKey);
+                        })
+                        .catch(error => {
+                            showAlert(error.message, 'danger');
+                        });
+                } catch (e) {
+                    showAlert('Dados inválidos (JSON inválido).', 'danger');
+                }
+            } else {
+                showAlert('Insira os dados a serem salvos.', 'warning');
+            }
+        });
 
         // Inicialização
-        updateUI(currentUser);
+        renderProjects();
     </script>
 </body>
 
