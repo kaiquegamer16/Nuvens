@@ -1,52 +1,109 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Notificações do Browser</title>
+  <title>Notificações Push JavaScript</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f4;
+    }
+
+    button {
+      padding: 12px 24px;
+      margin: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #367c39;
+    }
+
+    #btn_permission {
+      background-color: #2196F3;
+    }
+
+    #btn_permission:hover {
+      background-color: #1565C0;
+    }
+
+    #notification-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+  </style>
 </head>
 <body>
 
-  <h1>Clique no botão para exibir uma notificação:</h1>
+  <div id="notification-container">
+    <h1>Experimente as Notificações!</h1>
+    <p>Clique nos botões abaixo para receber notificações do nosso site.</p>
+  </div>
 
-  <button id="btnNotificar">Exibir Notificação</button>
+  <button type="button" id="btn_permission">Solicitar Permissão</button>
+  <button type="button" id="btn_push">Mostrar Notificação</button>
 
   <script>
-    const btnNotificar = document.getElementById('btnNotificar');
+    var btnPermission = document.getElementById("btn_permission");
+    var btnPush = document.getElementById("btn_push");
 
-    btnNotificar.addEventListener('click', () => {
-      // 1. Verificar se o browser suporta notificações
-      if (!("Notification" in window)) {
-        alert("Este browser não suporta notificações.");
-        return;
-      }
+    // Esconde o botão de permissão se já tiver sido concedida ou negada
+    if (Notification.permission !== "default") {
+      btnPermission.style.display = "none";
+    } else {
+      btnPermission.style.display = "inline-block";
+    }
 
-      // 2. Solicitar permissão ao usuário (se necessário)
+    // Solicita a permissão quando o botão é clicado
+    btnPermission.onclick = evt => {
       Notification.requestPermission().then(permission => {
-        if (permission === "granted") {
-          // 3. Criar e exibir a notificação
-          const notification = new Notification("Olá!", {
-            body: "Esta é uma notificação de exemplo!",
-            icon: "https://www.rocketseat.com.br/static/images/logo.svg" // Substitua pelo seu ícone
-          });
-
-          // 4. (Opcional) Definir o que acontece quando o usuário clica na notificação
-          notification.onclick = () => {
-            window.focus(); // Foca na janela/aba do browser
-            notification.close(); // Fecha a notificação
-          };
-
-          // 5. (Opcional) Definir o tempo para fechar a notificação automaticamente
-          setTimeout(() => {
-            notification.close();
-          }, 5000); // Fecha após 5 segundos (5000ms)
-        } else if (permission === "denied") {
-          alert("Permissão para notificações negada pelo usuário.");
-        } else {
-          // Permissão 'default' - O usuário ainda não decidiu, pode ser útil mostrar
-          // uma mensagem explicando porque você quer enviar notificações.
-          console.log("Permissão para notificações ainda não concedida.");
+        // Após a permissão ser concedida/negada, esconde o botão
+        if (permission !== "default") {
+          btnPermission.style.display = "none";
         }
       });
-    });
+    };
+
+    // Função para gerar notificações
+    function spawnNotification(opcoes) {
+      var n = new Notification(opcoes.title, opcoes.opt);
+
+      if (opcoes.link !== '') {
+        n.addEventListener("click", function() {
+          n.close();
+          window.focus();
+          window.location.href = opcoes.link;
+        });
+      }
+    }
+
+    // Cria uma notificação quando o botão de push é clicado
+    btnPush.onclick = evt => {
+      spawnNotification({
+        opt: {
+          body: "Confira as novidades no nosso site!",
+          icon: "https://nuvens.netlify.app/icon.png" // Use um ícone do seu site
+        },
+        title: "Nuvens",
+        link: "https://nuvens.netlify.app/"
+      });
+    };
   </script>
 
 </body>
