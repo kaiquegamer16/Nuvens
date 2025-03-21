@@ -6,9 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador de Projetos Firebase</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-        integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -27,7 +25,7 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 90%;
-            max-width: 900px;
+            max-width: 1200px;
         }
 
         h1 {
@@ -36,72 +34,29 @@
             margin-bottom: 30px;
         }
 
-        .panel {
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-
-        .panel-heading {
-            background-color: #007bff;
-            color: white;
-            padding: 10px;
-            border-bottom: 1px solid #ced4da;
-            cursor: pointer;
-            border-top-left-radius: 5px;
-            border-top-right-radius: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .panel-body {
-            padding: 15px;
-            display: none;
-            /* Esconde os painéis inicialmente */
-        }
-
-        .panel-body.show {
-            display: block;
-            /* Mostra o painel quando a classe 'show' é adicionada */
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            font-weight: bold;
-            color: #495057;
-        }
-
-        .btn-primary {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-
-        .btn-primary:hover {
-            background-color: #0069d9;
-            border-color: #0062cc;
-        }
-
+        /* Estilos para a lista de projetos */
         #projectList {
             margin-top: 20px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            padding: 10px;
         }
 
         .projectItem {
-            border-bottom: 1px solid #ced4da;
-            padding: 10px 0;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .projectItem:last-child {
-            border-bottom: none;
+        .projectItem:hover {
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+
+        .projectActions {
+            display: flex;
+            gap: 5px;
         }
 
         .apiKey {
@@ -109,8 +64,31 @@
             padding: 5px;
             border-radius: 3px;
             font-family: monospace;
+            display: block;
+            margin-top: 5px;
         }
 
+        /* Estilos para o painel de controle do projeto */
+        #projectDashboard {
+            display: none;
+            margin-top: 20px;
+        }
+
+        #projectDashboard.show {
+            display: block;
+        }
+
+        .nav-tabs .nav-link {
+            color: #495057;
+        }
+
+        .nav-tabs .nav-link.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff #007bff #fff;
+        }
+
+        /* Estilos para o editor Ace */
         #codeEditor {
             width: 100%;
             height: 250px;
@@ -119,126 +97,131 @@
             margin-bottom: 15px;
         }
 
-        /* Estilos para a visualização de dados do projeto */
-        #projectDataView {
-            margin-top: 20px;
+        #storageData {
+            height: 200px;
+            font-family: monospace;
             border: 1px solid #ced4da;
             border-radius: 5px;
             padding: 10px;
+            background-color: #f8f9fa;
+            overflow-y: auto;
         }
 
-        .project-settings {
-            display: none;
-            /* Oculta as configurações do projeto inicialmente */
-            margin-top: 20px;
+        /* Estilos para a autenticação */
+        #authPanel {
+            margin-bottom: 20px;
             padding: 15px;
             border: 1px solid #ced4da;
             border-radius: 5px;
             background-color: #f8f9fa;
         }
 
-        .project-settings.show {
-            display: block;
-            /* Mostra as configurações quando a classe 'show' é adicionada */
+        #profileIcon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #bbb;
+            display: inline-block;
+            cursor: pointer;
+            margin-right: 10px;
         }
 
-        /* Estilo para a visualização em árvore */
-        .json-tree {
-            font-family: monospace;
-            font-size: 14px;
-            padding-left: 20px;
-        }
-
-        .json-key {
-            color: #c7254e;
-        }
-
-        .json-value {
-            color: #3a87ad;
-        }
-
-        .json-null {
-            color: #777;
-        }
-
-        .json-boolean {
-            color: #007bff;
-        }
-
-        .json-number {
-            color: #00a368;
-        }
-
-        #codeEditorContainer {
-            position: relative;
-        }
-
-        #copyCodeButton {
-            position: absolute;
-            top: 5px;
-            right: 5px;
+        #profileIcon img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
         }
     </style>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js" type="text/javascript"
         charset="utf-8"></script>
-
 </head>
 
 <body>
     <div class="container">
         <h1>Simulador de Projetos Firebase</h1>
 
-        <div class="panel">
-            <div class="panel-heading" data-target="#createProjectPanel">
-                Criar Novo Projeto
-                <i class="fas fa-chevron-down"></i>
+        <!-- Painel de Autenticação -->
+        <div id="authPanel">
+            <h2>Autenticação</h2>
+            <div class="mb-3">
+                <label for="nickname" class="form-label">Nome de Usuário:</label>
+                <input type="text" class="form-control" id="nickname" placeholder="Nome de Usuário">
             </div>
-            <div class="panel-body" id="createProjectPanel">
-                <div class="form-group">
-                    <label for="projectName">Nome do Projeto:</label>
-                    <input type="text" class="form-control" id="projectName" placeholder="Nome do Projeto">
-                </div>
-                <button class="btn btn-primary btn-block" id="createProject">Criar Projeto</button>
+            <div class="mb-3">
+                <label for="password" class="form-label">Senha:</label>
+                <input type="password" class="form-control" id="password" placeholder="Senha">
             </div>
+            <button class="btn btn-primary" id="signUp">Criar Conta</button>
+            <button class="btn btn-secondary" id="signIn">Entrar</button>
+            <p id="authStatus"></p>
         </div>
 
+        <!-- Botão de Logout e Ícone de Perfil -->
+        <div id="profileArea" style="display: none;">
+            <div id="profileIcon">
+                <img src="" alt="Perfil" style="display: none;">
+            </div>
+            <button class="btn btn-danger" id="signOut">Sair</button>
+        </div>
+
+        <!-- Criar Projeto -->
+        <div class="mb-3">
+            <label for="projectName" class="form-label">Nome do Projeto:</label>
+            <input type="text" class="form-control" id="projectName" placeholder="Nome do Projeto">
+            <button class="btn btn-primary mt-2" id="createProject">Criar Projeto</button>
+        </div>
+
+        <!-- Lista de Projetos -->
         <h2>Lista de Projetos</h2>
         <div id="projectList"></div>
 
-        <!-- Área para exibir os dados e configurações do projeto selecionado -->
-        <div id="projectDataView" class="project-settings">
-            <h2>Configurações do Projeto <span id="currentProjectName"></span></h2>
-
-            <div class="form-group">
-                <label for="apiKeyDisplay">Chave API:</label>
-                <input type="text" class="form-control" id="apiKeyDisplay" readonly>
+        <!-- Painel de Controle do Projeto -->
+        <div id="projectDashboard" class="mt-4">
+            <h2>Painel de Controle do Projeto</h2>
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="settings-tab" data-bs-toggle="tab"
+                        data-bs-target="#settings" type="button" role="tab" aria-controls="settings"
+                        aria-selected="true">Configurações</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="api-tab" data-bs-toggle="tab" data-bs-target="#api" type="button"
+                        role="tab" aria-controls="api" aria-selected="false">API</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="storage-tab" data-bs-toggle="tab" data-bs-target="#storage"
+                        type="button" role="tab" aria-controls="storage" aria-selected="false">Armazenamento</button>
+                </li>
+            </ul>
+            <div class="tab-content" id="myTabContent">
+                <!-- Configurações -->
+                <div class="tab-pane fade show active" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+                    <h3>Configurações do Projeto</h3>
+                    <p>Nome do Projeto: <span id="projectNameDisplay"></span></p>
+                    <button class="btn btn-primary" id="generateApiKey">Gerar Nova Chave API</button>
+                </div>
+                <!-- API -->
+                <div class="tab-pane fade" id="api" role="tabpanel" aria-labelledby="api-tab">
+                    <h3>API do Projeto</h3>
+                    <p>Chave API: <span class="apiKey" id="apiKeyDisplay"></span></p>
+                    <h4>Código de Integração (CDN)</h4>
+                    <div id="codeEditor"></div>
+                </div>
+                <!-- Armazenamento -->
+                <div class="tab-pane fade" id="storage" role="tabpanel" aria-labelledby="storage-tab">
+                    <h3>Armazenamento do Projeto</h3>
+                    <div id="storageData">Nenhum dado armazenado.</div>
+                    <textarea class="form-control mt-3" id="apiData"
+                        placeholder="Dados a serem armazenados (JSON)"></textarea>
+                    <button class="btn btn-primary mt-2" id="saveData">Salvar Dados (Simulado)</button>
+                </div>
             </div>
-
-            <h3>Código de Integração (CDN)</h3>
-            <div id="codeEditorContainer">
-                <button class="btn btn-secondary btn-sm" id="copyCodeButton"><i class="fas fa-copy"></i> Copiar
-                    Código</button>
-                <div id="codeEditor"></div>
-            </div>
-
-            <h3>Dados Armazenados</h3>
-            <div id="projectDataDisplay" class="json-tree">
-                <!-- Os dados do projeto serão exibidos aqui -->
-                Carregando dados...
-            </div>
-
-            <div class="form-group">
-                <label for="apiData">Dados a serem armazenados (JSON):</label>
-                <textarea class="form-control" id="apiData"
-                    placeholder="Dados a serem armazenados (JSON)"></textarea>
-            </div>
-            <button class="btn btn-primary btn-block" id="saveData">Salvar Dados (Simulado)</button>
-            <button class="btn btn-danger btn-block" id="clearData">Limpar Dados (Firebase)</button>
         </div>
     </div>
-
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script type="module">
         import {
             initializeApp
@@ -251,27 +234,37 @@
             get,
             set
         } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-database.js";
+        import {
+            getAuth,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
 
         // Configurações do SEU projeto Firebase (SUBSTITUA!)
         const firebaseConfig = {
-            apiKey: "AIzaSyBuj2PUWB6YHaE5DPrWnE34NGUGnZDYvDE", // <-- Sua chave real
-            authDomain: "banco-5a678.firebaseapp.com", // <-- Seu dominio
-            databaseURL: "https://banco-5a678-default-rtdb.firebaseio.com", // <-- Seu URL do banco
-            projectId: "banco-5a678", // <-- Seu ID do projeto
-            storageBucket: "banco-5a678.firebasestorage.app", // <-- Seu Bucket
-            messagingSenderId: "943801310064", // <-- Seu Sender ID
-            appId: "1:943801310064:web:50534c4cdaa459a7b74db5", // <-- Seu App ID
-            measurementId: "G-DEER2QFNXL" // <-- Seu Measurement ID (opcional)
+            apiKey: "AIzaSyBuj2PUWB6YHaE5DPrWnE34NGUGnZDYvDE",
+            authDomain: "banco-5a678.firebaseapp.com",
+            databaseURL: "https://banco-5a678-default-rtdb.firebaseio.com",
+            projectId: "banco-5a678",
+            storageBucket: "banco-5a678.firebasestorage.app",
+            messagingSenderId: "943801310064",
+            appId: "1:943801310064:web:50534c4cdaa459a7b74db5",
+            measurementId: "G-DEER2QFNXL"
         };
 
         // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
+        const auth = getAuth(app);
 
         // Inicializar o editor Ace
         const codeEditor = ace.edit("codeEditor");
         codeEditor.setTheme("ace/theme/monokai");
         codeEditor.session.setMode("ace/mode/javascript");
+
+        let currentUser = null;
 
         // Funções utilitárias
         function generateRandomApiKey() {
@@ -284,276 +277,293 @@
             return apiKey;
         }
 
-        function loadProjects() {
-            let projects = JSON.parse(localStorage.getItem('firebaseProjects')) || [];
-            return projects;
+        function loadProjects(userId) {
+            if (!userId) {
+                return;
+            }
+            const projectsRef = ref(database, `users/${userId}/projects`);
+            onValue(projectsRef, (snapshot) => {
+                const data = snapshot.val();
+                const projects = data ? Object.entries(data).map(([key, value]) => ({
+                    id: key,
+                    ...value
+                })) : [];
+                renderProjects(projects);
+            });
         }
 
-        function saveProjects(projects) {
-            localStorage.setItem('firebaseProjects', JSON.stringify(projects));
+        function saveProject(userId, project) {
+            if (!userId) {
+                console.error("Nenhum usuário logado.");
+                return;
+            }
+
+            const projectsRef = ref(database, `users/${userId}/projects`);
+            return push(projectsRef, project);
         }
 
-        function renderProjects() {
+        function updateProject(userId, projectId, updates) {
+            if (!userId || !projectId) {
+                console.error("Usuário ou ID do projeto inválido.");
+                return;
+            }
+
+            const projectRef = ref(database, `users/${userId}/projects/${projectId}`);
+            return update(projectRef, updates);
+        }
+
+        function deleteProject(userId, projectId) {
+            if (!userId || !projectId) {
+                console.error("Usuário ou ID do projeto inválido.");
+                return;
+            }
+
+            const projectRef = ref(database, `users/${userId}/projects/${projectId}`);
+            return remove(projectRef);
+        }
+
+        function renderProjects(projects) {
             const projectListDiv = document.getElementById('projectList');
             projectListDiv.innerHTML = '';
 
-            const projects = loadProjects();
-            projects.forEach((project, index) => {
+            projects.forEach((project) => {
                 const projectDiv = document.createElement('div');
                 projectDiv.classList.add('projectItem');
                 projectDiv.innerHTML = `
-                <h3>${project.name}</h3>
-                <div>
-                    <button class="btn btn-info btn-sm open-project" data-index="${index}">Abrir</button>
-                    <button class="btn btn-danger btn-sm delete-project" data-index="${index}"><i class="fas fa-trash"></i></button>
-                </div>
-            `;
+                    <div>
+                        <h3>${project.name}</h3>
+                        <span class="apiKey">API Key: ${project.apiKey}</span>
+                    </div>
+                    <div class="projectActions">
+                        <button class="btn btn-danger btn-sm deleteProject" data-id="${project.id}">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                `;
                 projectListDiv.appendChild(projectDiv);
-            });
 
-            // Adiciona event listeners aos botões "Abrir" e "Excluir"
-            document.querySelectorAll('.open-project').forEach(button => {
-                button.addEventListener('click', () => {
-                    const index = button.dataset.index;
-                    openProject(index);
+                projectDiv.addEventListener('click', (event) => {
+                    if (!event.target.classList.contains('deleteProject') && !event.target.closest('.deleteProject')) {
+                        openProjectDashboard(project);
+                    }
                 });
             });
 
-            document.querySelectorAll('.delete-project').forEach(button => {
-                button.addEventListener('click', () => {
-                    const index = button.dataset.index;
-                    deleteProject(index);
+            // Adicionar listeners para os botões de exclusão APÓS adicionar os projetos à lista
+            document.querySelectorAll('.deleteProject').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    event.stopPropagation(); // Impede que o evento de clique se propague para o projectDiv
+                    const projectId = button.dataset.id;
+                    deleteProject(currentUser.uid, projectId)
+                        .then(() => {
+                            showAlert('Projeto excluído com sucesso!', 'success');
+                        })
+                        .catch(error => {
+                            showAlert('Erro ao excluir projeto: ' + error, 'danger');
+                        });
                 });
             });
         }
 
-        function deleteProject(index) {
-            if (confirm('Tem certeza que deseja excluir este projeto?')) {
-                let projects = loadProjects();
-                const apiKey = projects[index].apiKey; // Pega a API Key antes de deletar
-                projects.splice(index, 1);
-                saveProjects(projects);
-                renderProjects();
-                closeProjectView();
-                showAlert('Projeto excluído com sucesso!', 'success');
-                clearFirebaseData(apiKey); // Limpa os dados do Firebase
-            }
+        function openProjectDashboard(project) {
+            const dashboard = document.getElementById('projectDashboard');
+            dashboard.classList.add('show');
+
+            // Preencher informações do projeto
+            document.getElementById('projectNameDisplay').textContent = project.name;
+            document.getElementById('apiKeyDisplay').textContent = project.apiKey;
+
+            // Atualizar o código de integração
+            updateIntegrationCode(project.apiKey);
+
+            // Carregar dados do armazenamento
+            loadStorageData(currentUser.uid, project.apiKey);
+
+            // Armazenar o projeto atualmente aberto
+            dashboard.dataset.currentProjectApiKey = project.apiKey;
+            dashboard.dataset.currentProjectId = project.id;
         }
 
-        function openProject(index) {
-            let projects = loadProjects();
-            const project = projects[index];
+        function closeProjectDashboard() {
+            const dashboard = document.getElementById('projectDashboard');
+            dashboard.classList.remove('show');
+            // Limpar os campos do painel quando o painel é fechado
+            document.getElementById('projectNameDisplay').textContent = '';
+            document.getElementById('apiKeyDisplay').textContent = '';
+            document.getElementById('storageData').textContent = 'Nenhum dado armazenado.';
+            codeEditor.setValue('');
+        }
 
-            // Preenche os campos e elementos HTML com os dados do projeto
-            document.getElementById('currentProjectName').textContent = project.name;
-            document.getElementById('apiKeyDisplay').value = project.apiKey;
+        function updateIntegrationCode(apiKey) {
+            const codeSnippet = `
+        <script type="module">
+          // Import the functions you need from the SDKs you need
+          import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+          import { getDatabase, ref, onValue, remove, get, set } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-database.js";
 
-            // Gera o código de integração e insere no editor Ace
-            const codeSnippet = generateCodeSnippet(project.apiKey);
+          // Your web app's Firebase configuration
+          const firebaseConfig = {
+            apiKey: "${apiKey}",
+            authDomain: "${firebaseConfig.authDomain}",
+            databaseURL: "${firebaseConfig.databaseURL}",
+            projectId: "${firebaseConfig.projectId}",
+            storageBucket: "${firebaseConfig.storageBucket}",
+            messagingSenderId: "${firebaseConfig.messagingSenderId}",
+            appId: "${firebaseConfig.appId}",
+            measurementId: "${firebaseConfig.measurementId}"
+          };
+
+          // Initialize Firebase
+          const app = initializeApp(firebaseConfig);
+          const database = getDatabase(app);
+        <\/script>
+            `;
             codeEditor.setValue(codeSnippet);
             codeEditor.clearSelection();
-
-            // Exibe os dados armazenados (simulado)
-            loadAndDisplayProjectData(project.apiKey);
-
-            // Mostra a seção de configurações do projeto
-            document.getElementById('projectDataView').classList.add('show');
         }
 
-        function closeProjectView() {
-            document.getElementById('projectDataView').classList.remove('show');
-        }
+        function loadStorageData(userId, apiKey) {
+            const storageDataDiv = document.getElementById('storageData');
+            const dataRef = ref(database, `users/${userId}/project_data/${apiKey}`);
 
-        function loadAndDisplayProjectData(apiKey) {
-            const projectDataDisplay = document.getElementById('projectDataDisplay');
-            projectDataDisplay.textContent = 'Carregando dados...'; // Mensagem inicial
-
-            const dataRef = ref(database, `simulated_projects/${apiKey}`);
             get(dataRef)
                 .then((snapshot) => {
                     if (snapshot.exists()) {
                         const data = snapshot.val();
-                        projectDataDisplay.innerHTML = ''; // Limpa "Carregando..."
-                        renderjson(data, projectDataDisplay);
+                        storageDataDiv.textContent = JSON.stringify(data, null, 2);
                     } else {
-                        projectDataDisplay.textContent = 'Nenhum dado encontrado para este projeto.';
+                        storageDataDiv.textContent = 'Nenhum dado armazenado.';
                     }
                 })
                 .catch((error) => {
-                    projectDataDisplay.textContent = `Erro ao carregar os dados: ${error}`;
+                    console.error("Erro ao carregar dados:", error);
+                    storageDataDiv.textContent = 'Erro ao carregar dados.';
                 });
         }
 
-        // Função para renderizar o JSON formatado
-        function renderjson(json, element) {
-            element.innerHTML = syntaxHighlight(JSON.stringify(json, null, 2));
-        }
+        function saveData(userId, apiKey, jsonData) {
+            const dataRef = ref(database, `users/${userId}/project_data/${apiKey}`);
 
-        // Função para syntax highlight do JSON
-        function syntaxHighlight(json) {
-            json = json.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
-            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-                let cls = 'json-number';
-                if (/^"/.test(match)) {
-                    if (/:$/.test(match)) {
-                        cls = 'json-key';
-                    } else {
-                        cls = 'json-string';
-                    }
-                } else if (/true|false/.test(match)) {
-                    cls = 'json-boolean';
-                } else if (/null/.test(match)) {
-                    cls = 'json-null';
-                }
-                return '<span class="' + cls + '">' + match + '</span>';
-            });
-        }
-
-        function generateCodeSnippet(apiKey) {
-            return `
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
-  import { getDatabase, ref, onValue, remove, get, set } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-database.js";
-
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "${apiKey}",
-    authDomain: "${firebaseConfig.authDomain}",
-    databaseURL: "${firebaseConfig.databaseURL}",
-    projectId: "${firebaseConfig.projectId}",
-    storageBucket: "${firebaseConfig.storageBucket}",
-    messagingSenderId: "${firebaseConfig.messagingSenderId}",
-    appId: "${firebaseConfig.appId}",
-    measurementId: "${firebaseConfig.measurementId}"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const database = getDatabase(app);
-
-  // Exemplo de uso:
-  const dataRef = ref(database, 'seu/caminho/para/os/dados');
-  set(dataRef, { chave: 'valor' });
-            `;
+            return set(dataRef, jsonData)
+                .then(() => {
+                    return 'Dados salvos com sucesso!';
+                })
+                .catch(error => {
+                    throw new Error('Erro ao salvar dados: ' + error);
+                });
         }
 
         function showAlert(message, type = 'success') {
             const alertDiv = document.createElement('div');
             alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
             alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-          <span aria-hidden="true">×</span>
-        </button>
-      `;
+                ${message}
+                <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            `;
             const container = document.querySelector('.container');
             container.insertBefore(alertDiv, container.firstChild);
 
             setTimeout(() => {
                 $(alertDiv).alert('close');
-            }, 5000); // Fecha o alerta após 5 segundos
+            }, 5000);
         }
 
-        function clearFirebaseData(apiKey) {
-            if (confirm('Tem certeza que deseja limpar todos os dados deste projeto no Firebase?')) {
-                const dataRef = ref(database, `simulated_projects/${apiKey}`);
-                remove(dataRef)
-                    .then(() => {
-                        showAlert('Dados do Firebase limpos com sucesso!', 'success');
-                        loadAndDisplayProjectData(apiKey); // Recarrega para mostrar que está vazio
-                    })
-                    .catch(error => {
-                        showAlert('Erro ao limpar os dados do Firebase: ' + error, 'danger');
+        // Autenticação
+        document.getElementById('signUp').addEventListener('click', () => {
+            const nickname = document.getElementById('nickname').value;
+            const password = document.getElementById('password').value;
+            const email = `${nickname}@example.com`; // Email genérico, não precisa ser real
+
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    return ref(database, `users/${user.uid}/profile`).set({
+                        nickname: nickname
                     });
-            }
-        }
-
-        // Event Listeners
-        document.getElementById('createProject').addEventListener('click', () => {
-            const projectName = document.getElementById('projectName').value.trim();
-            if (projectName) {
-                let projects = loadProjects();
-                const newProject = {
-                    name: projectName,
-                    apiKey: generateRandomApiKey()
-                };
-                projects.push(newProject);
-                saveProjects(projects);
-                renderProjects();
-                document.getElementById('projectName').value = '';
-                showAlert('Projeto criado com sucesso!', 'success');
-            } else {
-                showAlert('Por favor, insira o nome do projeto.', 'danger');
-            }
-        });
-
-        document.getElementById('saveData').addEventListener('click', () => {
-            const apiKey = document.getElementById('apiKeyDisplay').value; // Pega a chave da tela do projeto
-            const apiData = document.getElementById('apiData').value.trim();
-
-            if (apiKey && apiData) {
-                try {
-                    const jsonData = JSON.parse(apiData);
-                    const dataRef = ref(database, `simulated_projects/${apiKey}`);
-
-                    set(dataRef, jsonData)
-                        .then(() => {
-                            showAlert('Dados salvos com sucesso!', 'success');
-                            document.getElementById('apiData').value = '';
-
-                            // Recarrega os dados do projeto
-                            loadAndDisplayProjectData(apiKey);
-                        })
-                        .catch(error => {
-                            showAlert('Erro ao salvar dados: ' + error, 'danger');
-                        });
-
-                } catch (e) {
-                    showAlert('Dados inválidos (JSON inválido).', 'danger');
-                }
-            } else {
-                showAlert('Insira os dados a serem salvos.', 'warning');
-            }
-        });
-
-        document.getElementById('clearData').addEventListener('click', () => {
-            const apiKey = document.getElementById('apiKeyDisplay').value;
-            clearFirebaseData(apiKey);
-        });
-
-        document.getElementById('copyCodeButton').addEventListener('click', () => {
-            const code = codeEditor.getValue();
-            navigator.clipboard.writeText(code)
-                .then(() => {
-                    showAlert('Código copiado para a área de transferência!', 'success');
                 })
-                .catch(err => {
-                    showAlert('Erro ao copiar o código: ' + err, 'danger');
+                .then(() => {
+                    showAlert('Conta criada com sucesso!', 'success');
+                    document.getElementById('authPanel').style.display = 'none'; // Esconde painel de autenticação
+                    document.getElementById('profileArea').style.display = 'block'; // Exibe área de perfil
+                    document.getElementById('authStatus').textContent = `Usuário logado: ${nickname}`;
+                    document.getElementById('projectName').disabled = false;
+                    loadProjects(auth.currentUser.uid);
+                })
+                .catch((error) => {
+                    showAlert('Erro ao criar conta: ' + error.message, 'danger');
                 });
         });
 
-        // Inicialização
-        renderProjects();
+        document.getElementById('signIn').addEventListener('click', () => {
+            const nickname = document.getElementById('nickname').value;
+            const password = document.getElementById('password').value;
+            const email = `${nickname}@example.com`;
 
-        // Evento para abrir/fechar painéis
-        document.querySelectorAll('.panel-heading').forEach(header => {
-            header.addEventListener('click', () => {
-                const target = header.dataset.target;
-                const panelBody = document.querySelector(target);
-                const icon = header.querySelector('i');
-
-                panelBody.classList.toggle('show');
-
-                if (panelBody.classList.contains('show')) {
-                    icon.classList.remove('fa-chevron-down');
-                    icon.classList.add('fa-chevron-up');
-                } else {
-                    icon.classList.remove('fa-chevron-up');
-                    icon.classList.add('fa-chevron-down');
-                }
-            });
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    currentUser = user;
+                    updateUI(user);
+                    showAlert('Login realizado com sucesso!', 'success');
+                })
+                .catch((error) => {
+                    showAlert('Erro ao realizar login: ' + error.message, 'danger');
+                });
         });
+
+        document.getElementById('signOut').addEventListener('click', () => {
+            signOut(auth)
+                .then(() => {
+                    currentUser = null;
+                    updateUI(null);
+                    showAlert('Logout realizado com sucesso!', 'success');
+                })
+                .catch((error) => {
+                    showAlert('Erro ao realizar logout: ' + error.message, 'danger');
+                });
+        });
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            updateUI(user);
+        });
+
+        function updateUI(user) {
+            const authStatus = document.getElementById('authStatus');
+            const authPanel = document.getElementById('authPanel');
+            const createProjectButton = document.getElementById('createProject');
+            const profileArea = document.getElementById('profileArea');
+
+            if (user) {
+                ref(database, `users/${user.uid}/profile`).once('value')
+                    .then(snapshot => {
+                        const profile = snapshot.val();
+                        if (profile) {
+                            authStatus.textContent = `Usuário logado: ${profile.nickname}`;
+                            authPanel.style.display = 'none';
+                            profileArea.style.display = 'block';
+                            createProjectButton.disabled = false;
+                            loadProjects(user.uid);
+                        }
+                    });
+            } else {
+                authStatus.textContent = 'Nenhum usuário logado.';
+                authPanel.style.display = 'block';
+                profileArea.style.display = 'none';
+                createProjectButton.disabled = true;
+                document.getElementById('projectList').innerHTML = '';
+            }
+        }
+
+        import {
+            push,
+            update
+        } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-database.js";
+
+        // Inicialização
+        updateUI(currentUser);
     </script>
 </body>
 
