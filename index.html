@@ -4,183 +4,409 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Projetos Firebase</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Dashboard</title>
     <style>
+        /* Estilos Gerais */
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #fff;
             margin: 0;
             padding: 0;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
         }
 
-        .container {
-            background-color: #fff;
+        /* Dashboard */
+        #dashboard {
+            display: none;
+            flex-direction: column;
+            min-height: 100vh;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 1200px;
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
         }
 
-        h1 {
-            text-align: center;
-            color: #343a40;
-            margin-bottom: 30px;
-        }
-
-        /* Estilos para a lista de projetos */
-        #projectList {
-            margin-top: 20px;
-        }
-
-        .projectItem {
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 10px;
+        .dashboard-header {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 10px;
+        }
+
+        /* Imagem de Perfil */
+        .profile-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #333;
+            cursor: pointer;
+            overflow: hidden;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+
+        .profile-image:hover {
+            border-color: #4CAF50;
+        }
+
+        .profile-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Conteúdo Principal */
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+        }
+
+        /* Painel de Configurações */
+        #settingsPanel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1002;
+            justify-content: center;
             align-items: center;
         }
 
-        .projectItem:hover {
-            background-color: #f0f0f0;
-            cursor: pointer;
+        .settings-content {
+            background-color: #212121;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: left;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
-        .projectActions {
-            display: flex;
-            gap: 5px;
+        .settings-content h2 {
+            color: #fff;
+            margin-bottom: 20px;
+            text-align: center;
         }
 
-        .apiKey {
-            background-color: #e9ecef;
-            padding: 5px;
-            border-radius: 3px;
-            font-family: monospace;
+        .settings-content label {
             display: block;
-            margin-top: 5px;
+            margin-bottom: 5px;
+            color: #ddd;
         }
 
-        /* Estilos para o painel de controle do projeto */
-        #projectDashboard {
-            display: none;
-            margin-top: 20px;
-        }
-
-        #projectDashboard.show {
-            display: block;
-        }
-
-        .nav-tabs .nav-link {
-            color: #495057;
-        }
-
-        .nav-tabs .nav-link.active {
-            background-color: #007bff;
-            color: white;
-            border-color: #007bff #007bff #fff;
-        }
-
-        /* Estilos para o editor Ace */
-        #codeEditor {
+        .settings-content input[type="text"] {
             width: 100%;
-            height: 250px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+            box-sizing: border-box;
+        }
+
+        #profileImageInput {
+            display: none;
+        }
+
+        .settings-content button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .settings-content button:hover {
+            background-color: #3e8e41;
+        }
+
+        .settings-content .profile-image {
+            margin: 20px auto;
+            display: block;
+            width: 100px;
+            height: 100px;
+        }
+
+        .settings-content .profile-image:hover {
+            border-color: #4CAF50;
+        }
+
+        /* Esconde o input padrão de arquivo */
+        .custom-file-upload {
+            border: 1px solid #ccc;
+            display: inline-block;
+            padding: 6px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
             margin-bottom: 15px;
         }
 
-        #storageData {
-            height: 200px;
-            font-family: monospace;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            padding: 10px;
-            background-color: #f8f9fa;
+        /* Estilos para o painel de sucesso */
+        #successPanel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #successPanel .content {
+            background-color: #212121;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #successPanel h2 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        #successPanel p {
+            color: #ddd;
+            font-size: 18px;
+        }
+
+        /* Estilos para o painel de seleção de conta */
+        #accountSelectionPanel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
             overflow-y: auto;
+            /* Adiciona barra de rolagem se necessário */
+        }
+
+        #accountSelectionPanel .content {
+            background-color: #212121;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            max-width: 80%;
+            /* Limita a largura do conteúdo */
+            max-height: 80%;
+            /* Limita a altura do conteúdo */
+        }
+
+        #accountSelectionPanel h2 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        #accountSelectionPanel ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #accountSelectionPanel li {
+            margin-bottom: 10px;
+        }
+
+        #accountSelectionPanel button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        #accountSelectionPanel button:hover {
+            background-color: #3e8e41;
+        }
+
+        /* Formulário de Registro */
+        .container {
+            background-color: #212121;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            padding: 30px;
+            width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #ddd;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 8px;
+            font-size: 16px;
+            background-color: #333;
+            color: #fff;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #3e8e41;
+        }
+
+        .password-strength {
+            font-size: 12px;
+            margin-top: 5px;
+            color: #888;
+        }
+
+        .password-strength.weak {
+            color: red;
+        }
+
+        .password-strength.medium {
+            color: orange;
+        }
+
+        .password-strength.strong {
+            color: green;
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js" type="text/javascript"
-        charset="utf-8"></script>
 </head>
 
 <body>
-    <div class="container">
-        <h1>Simulador de Projetos Firebase</h1>
 
-        <!-- Autenticação -->
-        <div class="mb-3">
-            <h2>Autenticação</h2>
-            <label for="username" class="form-label">Nome de Usuário:</label>
-            <input type="text" class="form-control" id="username" placeholder="Nome de Usuário">
-            <button class="btn btn-primary mt-2" id="createUser">Criar Conta</button>
-            <p id="loginStatus">Nenhum usuário logado.</p>
-        </div>
-
-        <!-- Criar Projeto -->
-        <div class="mb-3">
-            <label for="projectName" class="form-label">Nome do Projeto:</label>
-            <input type="text" class="form-control" id="projectName" placeholder="Nome do Projeto">
-            <button class="btn btn-primary mt-2" id="createProject">Criar Projeto</button>
-        </div>
-
-        <!-- Lista de Projetos -->
-        <h2>Lista de Projetos</h2>
-        <div id="projectList"></div>
-
-        <!-- Painel de Controle do Projeto -->
-        <div id="projectDashboard" class="mt-4">
-            <h2>Painel de Controle do Projeto</h2>
-            <ul class="nav nav-tabs" id="myTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="settings-tab" data-bs-toggle="tab"
-                        data-bs-target="#settings" type="button" role="tab" aria-controls="settings"
-                        aria-selected="true">Configurações</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="api-tab" data-bs-toggle="tab" data-bs-target="#api" type="button"
-                        role="tab" aria-controls="api" aria-selected="false">API</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="storage-tab" data-bs-toggle="tab" data-bs-target="#storage"
-                        type="button" role="tab" aria-controls="storage" aria-selected="false">Armazenamento</button>
-                </li>
-            </ul>
-            <div class="tab-content" id="myTabContent">
-                <!-- Configurações -->
-                <div class="tab-pane fade show active" id="settings" role="tabpanel" aria-labelledby="settings-tab">
-                    <h3>Configurações do Projeto</h3>
-                    <p>Nome do Projeto: <span id="projectNameDisplay"></span></p>
-                    <button class="btn btn-primary" id="generateApiKey">Gerar Nova Chave API</button>
-                </div>
-                <!-- API -->
-                <div class="tab-pane fade" id="api" role="tabpanel" aria-labelledby="api-tab">
-                    <h3>API do Projeto</h3>
-                    <p>Chave API: <span class="apiKey" id="apiKeyDisplay"></span></p>
-                    <h4>Código de Integração (CDN)</h4>
-                    <div id="codeEditor"></div>
-                </div>
-                <!-- Armazenamento -->
-                <div class="tab-pane fade" id="storage" role="tabpanel" aria-labelledby="storage-tab">
-                    <h3>Armazenamento do Projeto</h3>
-                    <div id="storageData">Nenhum dado armazenado.</div>
-                    <textarea class="form-control mt-3" id="apiData"
-                        placeholder="Dados a serem armazenados (JSON)"></textarea>
-                    <button class="btn btn-primary mt-2" id="saveData">Salvar Dados (Simulado)</button>
-                </div>
+    <!-- Formulário de Registro/Login -->
+    <div class="container" id="registrationForm">
+        <h1>Criar/Login Usuário</h1>
+        <form id="createUserForm">
+            <div class="form-group">
+                <label for="name">Nome:</label>
+                <input type="text" id="name" name="name" placeholder="Digite seu nome completo" required>
             </div>
+            <div class="form-group">
+                <label for="nickname">Nickname:</label>
+                <input type="text" id="nickname" name="nickname" placeholder="Escolha um nickname" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Senha:</label>
+                <input type="password" id="password" name="password" placeholder="Digite sua senha" required>
+                <div id="passwordStrength" class="password-strength"></div>
+            </div>
+            <button type="submit">Criar Conta</button>
+            <button type="button" id="loginButton">Login</button>
+        </form>
+    </div>
+
+    <!-- Painel de Sucesso -->
+    <div id="successPanel">
+        <div class="content">
+            <h2>Usuário Criado com Sucesso!</h2>
+            <p>Redirecionando...</p>
         </div>
     </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Painel de Seleção de Conta -->
+    <div id="accountSelectionPanel">
+        <div class="content">
+            <h2>Selecione sua conta:</h2>
+            <ul id="accountList">
+                <!-- As contas serão adicionadas aqui dinamicamente -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard">
+        <div class="dashboard-header">
+            <div class="profile-image" id="profileImage">
+                <img src="placeholder-image.png" alt="Imagem de Perfil">
+            </div>
+        </div>
+        <div class="main-content">
+            Bem-vindo ao seu Painel!
+        </div>
+    </div>
+
+    <!-- Painel de Configurações -->
+    <div id="settingsPanel">
+        <div class="settings-content">
+            <h2>Configurações</h2>
+            <div style="text-align: center;">
+                <div class="profile-image">
+                    <img src="placeholder-image.png" alt="Imagem de Perfil">
+                </div>
+                <label for="profileImageInput" class="custom-file-upload">
+                    Selecionar Imagem
+                </label>
+                <input type="file" id="profileImageInput" accept="image/*">
+            </div>
+
+            <label for="newNickname">Novo Nickname:</label>
+            <input type="text" id="newNickname" placeholder="Novo nickname">
+
+            <button id="saveChanges">Salvar Alterações</button>
+        </div>
+    </div>
+
     <script type="module">
         import {
             initializeApp
@@ -188,20 +414,11 @@
         import {
             getDatabase,
             ref,
-            onValue,
-            remove,
+            push,
+            set,
             get,
-            set
+            update
         } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-database.js";
-        // NÃO PRECISAMOS MAIS DO AUTH, MAS MANTEMOS PARA CASO QUEIRA USAR DEPOIS
-        /*import {
-            getAuth,
-            createUserWithEmailAndPassword,
-            signInWithEmailAndPassword,
-            signOut,
-            onAuthStateChanged
-        } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
-        */
 
         // Configurações do SEU projeto Firebase (SUBSTITUA!)
         const firebaseConfig = {
@@ -215,296 +432,266 @@
             measurementId: "G-DEER2QFNXL"
         };
 
-        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        //const auth = getAuth(app); // REMOVEMOS O AUTH
+        const db = getDatabase(app);
 
-        // Estado da autenticação
-        let currentUser = null;
+        // Elementos do DOM
+        const passwordInput = document.getElementById('password');
+        const passwordStrength = document.getElementById('passwordStrength');
+        const successPanel = document.getElementById('successPanel');
+        const registrationForm = document.getElementById('registrationForm');
+        const dashboard = document.getElementById('dashboard');
+        const accountSelectionPanel = document.getElementById('accountSelectionPanel');
+        const accountList = document.getElementById('accountList');
+        const profileImage = document.getElementById('profileImage');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const newNicknameInput = document.getElementById('newNickname');
+        const saveChangesButton = document.getElementById('saveChanges');
+        const profileImageInput = document.getElementById('profileImageInput');
+        const dashboardProfileImage = document.querySelector('#dashboard .profile-image img');
+        const settingsProfileImage = document.querySelector('#settingsPanel .profile-image img');
 
-        // Funções utilitárias
-        function generateRandomApiKey() {
-            const length = 32;
-            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            let apiKey = '';
-            for (let i = 0; i < length; i++) {
-                apiKey += characters.charAt(Math.floor(Math.random() * characters.length));
+        let allUsers = {};
+        let loggedInUserId = null; //Armazena o ID do usuário logado
+        let currentProfileImageUrl = "placeholder-image.png"; //URL da imagem do perfil
+
+        // Inicializar o perfil com a imagem padrão
+        dashboardProfileImage.src = currentProfileImageUrl;
+        settingsProfileImage.src = currentProfileImageUrl;
+
+
+        // Funções auxiliares para LocalStorage
+        function setLoggedInUser(userId) {
+            localStorage.setItem('loggedInUserId', userId);
+        }
+
+        function getLoggedInUser() {
+            return localStorage.getItem('loggedInUserId');
+        }
+
+        function clearLoggedInUser() {
+            localStorage.removeItem('loggedInUserId');
+        }
+
+        // FUNÇÕES AUXILIARES
+        // Função para atualizar a imagem de perfil (localmente)
+        function updateProfileImage(imageUrl) {
+            dashboardProfileImage.src = imageUrl;
+            settingsProfileImage.src = imageUrl;
+        }
+
+        //Listener para atualizar a senha
+        passwordInput.addEventListener('input', function() {
+            const password = passwordInput.value;
+            let strength = '';
+            let strengthClass = '';
+
+            if (password.length === 0) {
+                strength = '';
+                strengthClass = '';
+            } else if (password.length < 8) {
+                strength = 'Fraca';
+                strengthClass = 'weak';
+            } else if (password.length < 12) {
+                strength = 'Média';
+                strengthClass = 'medium';
+            } else {
+                strength = 'Forte';
+                strengthClass = 'strong';
             }
-            return apiKey;
-        }
 
-        function loadProjects() {
-            let projects = JSON.parse(localStorage.getItem('firebaseProjects')) || [];
-            return projects;
-        }
+            passwordStrength.textContent = strength ? `Senha: ${strength}` : '';
+            passwordStrength.className = `password-strength ${strengthClass}`;
+        });
 
-        function saveProjects(projects) {
-            localStorage.setItem('firebaseProjects', JSON.stringify(projects));
-        }
+        //Listener para criar a conta
+        document.getElementById('createUserForm').addEventListener('submit', function(event) {
+            event.preventDefault();
 
-        function renderProjects() {
-            const projectListDiv = document.getElementById('projectList');
-            projectListDiv.innerHTML = '';
+            const name = document.getElementById('name').value;
+            const nickname = document.getElementById('nickname').value;
+            const password = document.getElementById('password').value;
 
-            const projects = loadProjects();
-            projects.forEach((project, index) => {
-                const projectDiv = document.createElement('div');
-                projectDiv.classList.add('projectItem');
-                projectDiv.innerHTML = `
-                    <div>
-                        <h3>${project.name}</h3>
-                        <span class="apiKey">API Key: ${project.apiKey}</span>
-                    </div>
-                    <div class="projectActions">
-                        <button class="btn btn-danger btn-sm deleteProject" data-index="${index}">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </div>
-                `;
-                projectListDiv.appendChild(projectDiv);
+            const usersRef = ref(db, 'users');
+            const newUserRef = push(usersRef);
 
-                projectDiv.addEventListener('click', (event) => {
-                    if (!event.target.classList.contains('deleteProject') && !event.target.closest('.deleteProject')) {
-                        openProjectDashboard(project);
-                    }
-                });
-            });
+            set(newUserRef, {
+                    name: name,
+                    nickname: nickname,
+                    password: password, // **NÃO FAZER ISSO EM PRODUÇÃO!!!**
+                    profileImage: currentProfileImageUrl // Adiciona a URL da imagem de perfil
+                })
+                .then(() => {
+                    // Mostrar o painel de sucesso
+                    registrationForm.style.display = 'none'; //Esconde form
+                    successPanel.style.display = 'flex';
 
-            // Adicionar listeners para os botões de exclusão APÓS adicionar os projetos à lista
-            document.querySelectorAll('.deleteProject').forEach(button => {
-                button.addEventListener('click', (event) => {
-                    event.stopPropagation(); // Impede que o evento de clique se propague para o projectDiv
-                    const indexToDelete = parseInt(button.dataset.index);
-                    deleteProject(indexToDelete);
-                });
-            });
-        }
-
-        function deleteProject(index) {
-            let projects = loadProjects();
-            projects.splice(index, 1);
-            saveProjects(projects);
-            renderProjects();
-            closeProjectDashboard(); // Esconde o painel se estiver aberto
-            showAlert('Projeto excluído com sucesso!', 'success');
-        }
-
-        function openProjectDashboard(project) {
-            const dashboard = document.getElementById('projectDashboard');
-            dashboard.classList.add('show');
-
-            // Preencher informações do projeto
-            document.getElementById('projectNameDisplay').textContent = project.name;
-            document.getElementById('apiKeyDisplay').textContent = project.apiKey;
-
-            // Atualizar o código de integração
-            updateIntegrationCode(project.apiKey);
-
-            // Carregar dados do armazenamento
-            loadStorageData(project.apiKey);
-
-            // Armazenar o projeto atualmente aberto
-            dashboard.dataset.currentProjectApiKey = project.apiKey;
-        }
-
-        function closeProjectDashboard() {
-            const dashboard = document.getElementById('projectDashboard');
-            dashboard.classList.remove('show');
-            // Limpar os campos do painel quando o painel é fechado
-            document.getElementById('projectNameDisplay').textContent = '';
-            document.getElementById('apiKeyDisplay').textContent = '';
-            document.getElementById('storageData').textContent = 'Nenhum dado armazenado.';
-            codeEditor.setValue('');
-        }
-
-        function updateIntegrationCode(apiKey) {
-            const codeSnippet = `
-        <script type="module">
-          // Import the functions you need from the SDKs you need
-          import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
-          import { getDatabase, ref, onValue, remove, get, set } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-database.js";
-
-          // Your web app's Firebase configuration
-          const firebaseConfig = {
-            apiKey: "${apiKey}",
-            authDomain: "${firebaseConfig.authDomain}",
-            databaseURL: "${firebaseConfig.databaseURL}",
-            projectId: "${firebaseConfig.projectId}",
-            storageBucket: "${firebaseConfig.storageBucket}",
-            messagingSenderId: "${firebaseConfig.messagingSenderId}",
-            appId: "${firebaseConfig.appId}",
-            measurementId: "${firebaseConfig.measurementId}"
-          };
-
-          // Initialize Firebase
-          const app = initializeApp(firebaseConfig);
-          const database = getDatabase(app);
-        <\/script>
-            `;
-            codeEditor.setValue(codeSnippet);
-            codeEditor.clearSelection();
-        }
-
-        function loadStorageData(apiKey) {
-            const storageDataDiv = document.getElementById('storageData');
-            const dataRef = ref(database, `simulated_projects/${apiKey}`);
-
-            get(dataRef)
-                .then((snapshot) => {
-                    if (snapshot.exists()) {
-                        const data = snapshot.val();
-                        storageDataDiv.textContent = JSON.stringify(data, null, 2);
-                    } else {
-                        storageDataDiv.textContent = 'Nenhum dado armazenado.';
-                    }
+                    // Redirecionar para o painel após alguns segundos
+                    setTimeout(() => {
+                        successPanel.style.display = 'none'; //Esconde o painel de sucesso
+                        loadUsersAndShowAccountSelection(); // Carrega usuários e exibe seleção de conta
+                    }, 2000); // Redireciona após 2 segundos
                 })
                 .catch((error) => {
-                    console.error("Erro ao carregar dados:", error);
-                    storageDataDiv.textContent = 'Erro ao carregar dados.';
+                    console.error("Erro ao salvar usuário:", error);
+                    alert('Erro ao criar usuário. Verifique o console.');
                 });
-        }
+        });
 
-        function saveData(apiKey, jsonData) {
-            const dataRef = ref(database, `simulated_projects/${apiKey}`);
+        // Listener para carregar imagem
+        profileImageInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentProfileImageUrl = e.target.result;
+                    updateProfileImage(currentProfileImageUrl);
+                }
+                reader.readAsDataURL(file);
+            }
+        });
 
-            return set(dataRef, jsonData)
-                .then(() => {
-                    return 'Dados salvos com sucesso!';
-                })
-                .catch(error => {
-                    throw new Error('Erro ao salvar dados: ' + error);
-                });
-        }
+        // Listener para abrir o painel de configurações
+        profileImage.addEventListener('click', function() {
+            settingsPanel.style.display = 'flex';
+            // Desativar o overflow do body ao abrir o painel
+            document.body.style.overflow = 'hidden';
+        });
 
-        function showAlert(message, type = 'success') {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-            alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            `;
-            const container = document.querySelector('.container');
-            container.insertBefore(alertDiv, container.firstChild);
+        // Listener para salvar as alterações
+        saveChangesButton.addEventListener('click', async function() {
+            const newNickname = newNicknameInput.value;
 
-            setTimeout(() => {
-                $(alertDiv).alert('close');
-            }, 5000);
-        }
+            if (loggedInUserId) {
+                const userRef = ref(db, 'users/' + loggedInUserId);
+                const updates = {};
 
-        // Event Listeners
-        document.getElementById('createUser').addEventListener('click', async () => {
-            const username = document.getElementById('username').value.trim();
-            if (username) {
+                if (newNickname) {
+                    updates['nickname'] = newNickname;
+                }
+                updates['profileImage'] = currentProfileImageUrl; // Salva a URL da imagem de perfil
+
                 try {
-                    // Salva o nome de usuário no Firebase
-                    const userRef = ref(database, `users/${username}`); // Caminho para salvar os usuários
-                    await set(userRef, {
-                        username: username
-                    }); // Salva o nome de usuário
+                    await update(userRef, updates);
+                    alert('Perfil atualizado com sucesso!');
+                    settingsPanel.style.display = 'none';
+                    document.body.style.overflow = 'auto'; // Reativa o overflow
 
-                    currentUser = {
-                        uid: username,
-                        username: username
-                    }; // Define o usuário atual
-                    document.getElementById('loginStatus').textContent = `Usuário ${username} criado e logado com sucesso!`;
-                    document.getElementById('username').value = ''; // Limpa o campo
-                    showAlert(`Usuário ${username} criado e logado com sucesso!`, 'success');
+                    // Atualiza a exibição do nome no painel de seleção
+                    loadUsersAndShowAccountSelection();
+
                 } catch (error) {
-                    console.error("Erro ao criar usuário:", error);
-                    showAlert(`Erro ao criar usuário: ${error.message}`, 'danger');
+                    console.error("Erro ao atualizar perfil:", error);
+                    alert('Erro ao atualizar perfil. Verifique o console.');
                 }
             } else {
-                showAlert('Por favor, insira um nome de usuário.', 'warning');
+                alert('Nenhum usuário logado.');
             }
         });
 
-
-        document.getElementById('createProject').addEventListener('click', () => {
-            if (!currentUser) {
-                showAlert('Por favor, crie um usuário primeiro.', 'warning');
-                return;
-            }
-
-            const projectName = document.getElementById('projectName').value.trim();
-            if (projectName) {
-                let projects = loadProjects();
-                const newProject = {
-                    name: projectName,
-                    apiKey: generateRandomApiKey(),
-                    owner: currentUser.uid // Associa o projeto ao usuário logado
-                };
-                projects.push(newProject);
-                saveProjects(projects);
-                renderProjects();
-                document.getElementById('projectName').value = '';
-                showAlert('Projeto criado com sucesso!', 'success');
-            } else {
-                showAlert('Por favor, insira o nome do projeto.', 'danger');
-            }
-        });
-
-        document.getElementById('generateApiKey').addEventListener('click', () => {
-            if (!currentUser) {
-                showAlert('Por favor, crie um usuário primeiro.', 'warning');
-                return;
-            }
-
-            const dashboard = document.getElementById('projectDashboard');
-            const currentProjectApiKey = dashboard.dataset.currentProjectApiKey;
-
-            if (currentProjectApiKey) {
-                let projects = loadProjects();
-                const projectIndex = projects.findIndex(p => p.apiKey === currentProjectApiKey);
-
-                if (projectIndex !== -1) {
-                    projects[projectIndex].apiKey = generateRandomApiKey();
-                    saveProjects(projects);
-                    renderProjects();
-                    openProjectDashboard(projects[projectIndex]);
-                    showAlert('Chave API gerada com sucesso!', 'success');
+        // FUNÇÕES PARA LOGIN
+        // Função para carregar os usuários do Firebase
+        async function loadUsersAndShowAccountSelection() {
+            const usersRef = ref(db, 'users');
+            try {
+                const snapshot = await get(usersRef);
+                if (snapshot.exists()) {
+                    allUsers = snapshot.val(); // Armazena todos os usuários
+                    displayAccountSelection(allUsers); // Exibe a lista de contas
                 } else {
-                    showAlert('Projeto não encontrado.', 'danger');
+                    alert("Nenhuma conta encontrada. Crie uma conta primeiro.");
                 }
-            } else {
-                showAlert('Nenhum projeto selecionado.', 'warning');
+            } catch (error) {
+                console.error("Erro ao carregar usuários:", error);
+                alert("Erro ao carregar usuários. Verifique o console.");
+            }
+        }
+
+        // Função para exibir o painel de seleção de conta
+        function displayAccountSelection(users) {
+            accountList.innerHTML = ''; // Limpa a lista existente
+
+            for (const userId in users) {
+                const user = users[userId];
+                const listItem = document.createElement('li');
+                const button = document.createElement('button');
+                button.textContent = user.name; // Mostra o nome do usuário no botão
+                button.addEventListener('click', () => {
+                    login(userId); // Chama a função de login com o ID do usuário
+                });
+                listItem.appendChild(button);
+                accountList.appendChild(listItem);
+            }
+
+            registrationForm.style.display = 'none'; // Esconde o formulário de registro
+            accountSelectionPanel.style.display = 'flex'; // Mostra o painel de seleção
+            document.body.style.justifyContent = 'center';
+            document.body.style.alignItems = 'center';
+        }
+
+        // Função de login
+        function login(userId) {
+            accountSelectionPanel.style.display = 'none'; // Esconde a seleção de conta
+            registrationForm.style.display = 'none'; // Esconde o form
+            dashboard.style.display = 'flex'; // Mostra o dashboard (usar flex para o header)
+            document.body.style.justifyContent = 'flex-start'; // Alinha ao topo
+            document.body.style.alignItems = 'flex-start';
+            loggedInUserId = userId; // Define o ID do usuário logado
+            setLoggedInUser(userId);
+
+            // Atualiza a imagem de perfil no dashboard ao fazer login
+            const userProfileImage = allUsers[userId].profileImage || "placeholder-image.png"; // Se não houver imagem, usa a padrão
+            updateProfileImage(userProfileImage);
+
+            currentProfileImageUrl = userProfileImage; //Mantem atualizada a URL da imagem
+        }
+
+        // Evento do botão de login
+        document.getElementById('loginButton').addEventListener('click', function(event) {
+            event.preventDefault();
+            loadUsersAndShowAccountSelection();
+        });
+
+        document.addEventListener('click', function(event) {
+            const target = event.target;
+            if (target == settingsPanel) {
+                settingsPanel.style.display = 'none';
+                document.body.style.overflow = 'auto';
             }
         });
 
-        document.getElementById('saveData').addEventListener('click', () => {
-            if (!currentUser) {
-                showAlert('Por favor, crie um usuário primeiro.', 'warning');
-                return;
-            }
-            const dashboard = document.getElementById('projectDashboard');
-            const apiKey = dashboard.dataset.currentProjectApiKey;
-            const apiData = document.getElementById('apiData').value.trim();
-
-            if (apiKey && apiData) {
-                try {
-                    const jsonData = JSON.parse(apiData);
-                    saveData(apiKey, jsonData)
-                        .then(message => {
-                            showAlert(message, 'success');
-                            document.getElementById('apiData').value = '';
-                            loadStorageData(apiKey);
-                        })
-                        .catch(error => {
-                            showAlert(error.message, 'danger');
-                        });
-                } catch (e) {
-                    showAlert('Dados inválidos (JSON inválido).', 'danger');
-                }
+        // Verificar se há um usuário logado ao carregar a página
+        window.addEventListener('load', function() {
+            const storedUserId = getLoggedInUser();
+            if (storedUserId) {
+                loggedInUserId = storedUserId; // Define o ID do usuário logado
+                // Agora precisamos carregar os usuários para poder mostrar o dashboard corretamente
+                loadUsersAndShowDashboard(storedUserId);
             } else {
-                showAlert('Insira os dados a serem salvos.', 'warning');
+                // Se não houver usuário logado, mostrar a tela de login/cadastro
+                registrationForm.style.display = 'block';
             }
         });
 
-        // Inicialização
-        renderProjects();
+        // Funções auxiliares para carregar os usuários e mostrar o dashboard
+        async function loadUsersAndShowDashboard(userId) {
+            const usersRef = ref(db, 'users');
+            try {
+                const snapshot = await get(usersRef);
+                if (snapshot.exists()) {
+                    allUsers = snapshot.val(); // Armazena todos os usuários
+                    login(userId); // Chama a função login com o ID do usuário
+                } else {
+                    alert("Nenhuma conta encontrada. Crie uma conta primeiro.");
+                }
+            } catch (error) {
+                console.error("Erro ao carregar usuários:", error);
+                alert("Erro ao carregar usuários. Verifique o console.");
+            }
+        }
+
     </script>
+
 </body>
 
 </html>
